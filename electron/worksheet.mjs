@@ -3,9 +3,16 @@ import path from 'path'
 import { dialog } from 'electron'
 import { handleGetSettings } from './settings/settings.mjs'
 
-export async function openWorksheet(event, default_path) {
-  const file = await dialog.showOpenDialog({ defaultPath: default_path, properties: ['openFile'] })
-  console.log(file)
+export async function openWorksheet(event) {
+  const settings = handleGetSettings()
+  const file = await dialog.showOpenDialog({
+    defaultPath: settings.export.worksheet_folder_path,
+    properties: ['openFile'],
+  })
+  if (!file.canceled) {
+    const data = fs.readFileSync(file.filePaths[0], 'utf8')
+    return data
+  }
 }
 
 export async function saveWorksheet(event, { username, method, data }) {

@@ -173,7 +173,6 @@ const toggleWork = async () => {
 
 onMounted(async () => {
   await window.serialPort.listenSerialPort((data: string) => {
-    console.log(data)
     const input = document.activeElement as HTMLInputElement
     if (input) {
       input.value = data

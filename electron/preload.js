@@ -21,6 +21,6 @@ contextBridge.exposeInMainWorld('serialPort', {
 })
 
 contextBridge.exposeInMainWorld('worksheet', {
+  openWorksheet: () => ipcRenderer.invoke('worksheet:open'),
   saveWorksheet: (payload) => ipcRenderer.send('worksheet:save', payload),
-  openWorksheet: (payload) => ipcRenderer.invoke('openWorksheet', payload),
 })

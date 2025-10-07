@@ -92,7 +92,7 @@ export const useWorksheetStore = defineStore('worksheet', () => {
           ...[
             keys
               .map((key) => {
-                if (!['_sub_weightings', 'expand'].includes(key)) {
+                if (!['_sub_weightings', 'expand', '_passed_repeatability'].includes(key)) {
                   return key
                 }
               })
@@ -105,7 +105,7 @@ export const useWorksheetStore = defineStore('worksheet', () => {
       // Extract values
       for (const obj of toRaw(rawSheetData.value)) {
         const values = keys
-          .filter((key) => !['_sub_weightings', 'expand'].includes(key))
+          .filter((key) => !['_sub_weightings', 'expand', '_passed_repeatability'].includes(key))
           .map((key) => {
             if (key === '_method') {
               return obj['method'].code
@@ -127,8 +127,15 @@ export const useWorksheetStore = defineStore('worksheet', () => {
     }
   }
 
-  const openWorksheet = () => {
-    window.worksheet.openWorksheet(settingsStore.settings.export.worksheet_folder_path)
+  const openWorksheet = async () => {
+    const res = await window.worksheet.openWorksheet()
+    const data = res.split('\n')
+    const keys = data.splice(0, 1)[0].split(CSV_DELIMITER)
+    for (const row of data) {
+      if (!row) continue
+      console.log(row.split(CSV_DELIMITER))
+    }
+    console.log(keys)
   }
 
   return {

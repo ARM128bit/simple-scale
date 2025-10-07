@@ -63,7 +63,7 @@ app.whenReady().then(() => {
   ipcMain.handle('serial-port:close', handleCloseSerialPort)
 
   ipcMain.on('worksheet:save', saveWorksheet)
-  ipcMain.handle('openWorksheet', openWorksheet)
+  ipcMain.handle('worksheet:open', openWorksheet)
 
   createWorksheetFolder()
 

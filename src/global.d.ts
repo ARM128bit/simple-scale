@@ -19,7 +19,7 @@ declare global {
       successfulOpenSerialPort: (callback: (data: boolean) => void) => Promise<unknown>
     }
     worksheet: {
-      openWorksheet: (payload: unknown) => Promise<unknown>
+      openWorksheet: () => Promise<string>
       saveWorksheet: (payload: unknown) => Promise<unknown>
     }
   }

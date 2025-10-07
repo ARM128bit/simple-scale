@@ -7,7 +7,6 @@ export default class LossParallel extends Parallel {
       const crucible_weight = Number(this._crucible_weight.replace(',', '.'))
       const final_weight = Number(this._final_weight.replace(',', '.'))
       const sample_weight = Number(this._sample_weight.replace(',', '.'))
-      console.log(crucible_weight, final_weight, sample_weight)
       this._result = Number(
         (((crucible_weight + sample_weight - final_weight) / sample_weight) * 100).toPrecision(5),
       )
