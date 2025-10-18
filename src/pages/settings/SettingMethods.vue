@@ -43,11 +43,12 @@
           key="calc_type"
           :props="props"
         >
-          <q-input
+          <q-select
             v-model="props.row.calc_type"
+            :options="CalcTypeOptions"
             :readonly="!editingMethods.has(props.row)"
-            input-class="text-left"
-            type="text"
+            emit-value
+            map-options
             dense
           />
         </q-td>
@@ -72,7 +73,7 @@
             :key="rule.id"
           >
             от {{ rule.start }} до {{ rule.end }} {{ rule.value }}
-            {{ rule.type === 'absolute' ? 'абсолютных' : 'относительно среднегоa' }};
+            {{ rule.type === 'absolute' ? 'абсолютных' : 'относительно среднего' }};
           </div>
         </q-td>
         <q-td
@@ -121,6 +122,16 @@
         >
           <q-td class="text-right"> Диапазон сходимости {{ index + 1 }} </q-td>
           <q-td colspan="2">
+            <q-select
+              v-model="rule.type"
+              :options="RepeatabilityTypeOptions"
+              label="Тип"
+              emit-value
+              map-options
+              dense
+            />
+          </q-td>
+          <q-td>
             <q-input
               v-model.number="rule.start"
               input-class="text-left"
@@ -135,14 +146,6 @@
               input-class="text-left"
               label="Конечное значение"
               type="number"
-              dense
-            />
-          </q-td>
-          <q-td>
-            <q-input
-              v-model="rule.type"
-              input-class="text-left"
-              label="Тип"
               dense
             />
           </q-td>
@@ -296,6 +299,7 @@
 import { reactive, ref } from 'vue'
 import { useMethodsStore } from '@/stores/methods'
 import type { QTableColumn } from 'quasar'
+import { CalcTypeOptions, RepeatabilityTypeOptions } from '@/shared/constants'
 
 const methodsStore = useMethodsStore()
 const defaultRepeatabilityRule = (): IRepeatabilityRuleForm => {

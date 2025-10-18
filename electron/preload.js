@@ -6,21 +6,24 @@ contextBridge.exposeInMainWorld('settings', {
   setScales: (payload) => ipcRenderer.invoke('setScales', payload),
   getMethods: () => ipcRenderer.invoke('getMethods'),
   setMethods: (payload) => ipcRenderer.invoke('setMethods', payload),
-  getSettings: () => ipcRenderer.invoke('getSettings'),
-  setSettings: (payload) => ipcRenderer.invoke('setSettings', payload),
+  getSettings: () => ipcRenderer.invoke('settings:load'),
+  setSettings: (payload) => ipcRenderer.invoke('settings:save', payload),
 })
 
 contextBridge.exposeInMainWorld('serialPort', {
   initSerialPort: (payload) => ipcRenderer.send('serial-port:init', payload),
-  successfulCloseSerialPort: (callback) =>
-    ipcRenderer.invoke('serial-port:close', (_event, value) => callback(value)),
   listenSerialPort: (callback) =>
     ipcRenderer.on('serial-port:listen', (_event, value) => callback(value)),
   successfulOpenSerialPort: (callback) =>
     ipcRenderer.on('serial-port:successfully-opened', (_event, value) => callback(value)),
+  closeSerialPort: () => ipcRenderer.invoke('serial-port:close'),
 })
 
 contextBridge.exposeInMainWorld('worksheet', {
   openWorksheet: () => ipcRenderer.invoke('worksheet:open'),
-  saveWorksheet: (payload) => ipcRenderer.send('worksheet:save', payload),
+  saveWorksheet: (payload) => ipcRenderer.invoke('worksheet:save', payload),
+})
+
+contextBridge.exposeInMainWorld('export', {
+  exportToFile: (payload) => ipcRenderer.invoke('export:file', payload),
 })

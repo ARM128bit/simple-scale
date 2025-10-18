@@ -1,4 +1,4 @@
-import type { Reactive } from 'vue'
+import { reactive, type Reactive } from 'vue'
 
 export default abstract class Parallel implements IParallel {
   abstract calcResult(): void
@@ -14,9 +14,56 @@ export default abstract class Parallel implements IParallel {
   protected _exported_at: Date | null = null
   protected _passed_repeatability: 'passed' | 'not-passed' | undefined
 
-  constructor(method: IMethod, laborant: IUser) {
+  constructor({
+    method,
+    laborant,
+    lab_id = '',
+    crucible_id = '',
+    crucible_weight,
+    sample_weight,
+    final_weight,
+    result,
+    exported_at,
+    sub_weightings,
+  }: {
+    method: IMethod
+    laborant: IUser
+    lab_id?: string
+    crucible_id?: string
+    crucible_weight?: string
+    sample_weight?: string
+    final_weight?: string
+    result?: number
+    exported_at?: Date
+    sub_weightings?: ISubWeighting[]
+  }) {
+    this._lab_id = lab_id
     this._method = method
     this._laborant = laborant
+    this._crucible_id = crucible_id
+    this._crucible_weight = crucible_weight ?? null
+    this._sample_weight = sample_weight ?? null
+    this._final_weight = final_weight ?? null
+    this._result = result ?? null
+    this._exported_at = exported_at ?? null
+    if (method.const_weight_rule) {
+      this._sub_weightings = reactive(
+        new Set(
+          sub_weightings
+            ? sub_weightings
+            : [
+                {
+                  weight: null,
+                  weighted_at: null,
+                },
+                {
+                  weight: null,
+                  weighted_at: null,
+                },
+              ],
+        ),
+      )
+    }
   }
 
   get lab_id() {
@@ -124,7 +171,7 @@ export default abstract class Parallel implements IParallel {
     if (!this._sub_weightings) return
     this._sub_weightings.add({
       weight: null,
-      weighted_at: '',
+      weighted_at: null,
     })
   }
 }

@@ -7,20 +7,23 @@ declare global {
       setMethods: (payload: unknown) => Promise<unknown>
       getUsers: () => Promise<unknown>
       setUsers: (payload: unknown) => Promise<unknown>
-      getSettings: () => Promise<ISetting>
-      setSettings: (payload: ISetting) => Promise<boolean>
+      getSettings: () => Promise<string>
+      setSettings: (payload: string) => Promise<boolean>
       getScales: () => Promise<unknown>
       setScales: (payload: unknown) => Promise<unknown>
     }
     serialPort: {
       initSerialPort: (payload: unknown) => Promise<unknown>
       listenSerialPort: (callback: (data: string) => void) => Promise<unknown>
-      closeSerialPort: () => Promise<unknown>
       successfulOpenSerialPort: (callback: (data: boolean) => void) => Promise<unknown>
+      closeSerialPort: () => Promise<boolean>
     }
     worksheet: {
-      openWorksheet: () => Promise<string>
-      saveWorksheet: (payload: unknown) => Promise<unknown>
+      openWorksheet: () => Promise<{ data: string; path: string }>
+      saveWorksheet: (payload: unknown) => Promise<string>
+    }
+    export: {
+      exportToFile: (payload: { username: string; method: string; data: string }) => Promise<void>
     }
   }
 
@@ -30,12 +33,14 @@ declare global {
    */
   type CalcType = 'LOSS' | 'RESIDUE'
 
+  type RepeatabilityType = 'absolute' | 'relative'
+
   interface IRepeatabilityRuleForm {
     id?: number
     code?: IMethod['code']
     start?: number
     end?: number
-    type: 'absolute' | 'relative'
+    type: RepeatabilityType
     value?: number
   }
 
@@ -81,12 +86,19 @@ declare global {
   interface IExportSetting {
     url: string | null
     folder_path: string | null
+    data_template: string | null
+    extension: string | null
     worksheet_folder_path: string | null
   }
 
   interface IWorksheetColumn extends QTableColumn {
     required?: boolean
     visible?: boolean
+  }
+
+  interface ISettingColumn {
+    name: string
+    visible: boolean
   }
 
   interface IWorksheetSetting {
@@ -103,10 +115,13 @@ declare global {
   }
 
   type ISetting = { export: IExportSetting } & IWorksheetSetting & { serial_port: ISerialPort }
+  type IConfigSetting = { export: IExportSetting } & { worksheet_columns: ISettingColumn[] } & {
+    serial_port: ISerialPort
+  }
 
   interface ISubWeighting {
     weight: string | null
-    weighted_at: string
+    weighted_at: Date | null
   }
 
   interface IParallel {
@@ -120,6 +135,7 @@ declare global {
     sub_weightings?: ISubWeighting[]
     laborant: string
     passed_repeatability: 'passed' | 'not-passed' | undefined
+    exported_at: Date | null
     calcResult: () => void
   }
 }

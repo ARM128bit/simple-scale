@@ -1,6 +1,7 @@
 <template>
   <q-tr class="parallel">
     <q-td
+      class="parallel__actions q-gutter-sm"
       key="expand"
       :props="rowProps"
     >
@@ -9,9 +10,16 @@
         size="sm"
         color="accent"
         round
-        dense
         :icon="rowProps.row.expand ? 'remove' : 'add'"
         @click="rowProps.row.expand = !rowProps.row.expand"
+      />
+      <q-btn
+        :disable="!worksheetStore.worksheetIsLocked || !rowProps.row.result"
+        :loading="isExporting"
+        size="sm"
+        round
+        icon="upload"
+        @click="exportByFile"
       />
     </q-td>
     <q-td
@@ -24,6 +32,7 @@
         :readonly="!worksheetStore.worksheetIsLocked || !!rowProps.row['result']"
         type="text"
         borderless
+        @blur="worksheetStore.saveWorksheet"
       />
     </q-td>
     <q-td
@@ -36,6 +45,7 @@
         :readonly="!worksheetStore.worksheetIsLocked || !!rowProps.row['result']"
         type="text"
         borderless
+        @blur="worksheetStore.saveWorksheet"
       />
     </q-td>
     <q-td
@@ -43,13 +53,14 @@
       :props="rowProps"
     >
       <q-input
-        v-model="rowProps.row.crucible_weight"
+        v-model.trim="rowProps.row.crucible_weight"
         input-class="text-h4 text-left"
         :readonly="!worksheetStore.worksheetIsLocked || !!rowProps.row['result']"
         mask="#.####"
         fill-mask="0"
         reverse-fill-mask
         borderless
+        @blur="worksheetStore.saveWorksheet"
       />
     </q-td>
     <q-td
@@ -57,13 +68,14 @@
       :props="rowProps"
     >
       <q-input
-        v-model="rowProps.row.sample_weight"
+        v-model.trim="rowProps.row.sample_weight"
         input-class="text-h4 text-left"
         :readonly="!worksheetStore.worksheetIsLocked || !!rowProps.row['result']"
         mask="#.####"
         fill-mask="0"
         reverse-fill-mask
         borderless
+        @blur="worksheetStore.saveWorksheet"
       />
     </q-td>
     <q-td
@@ -71,7 +83,11 @@
       :props="rowProps"
     >
       <q-input
-        v-model="rowProps.row.final_weight"
+        v-model.trim="rowProps.row.final_weight"
+        :readonly="
+          // !!rowProps.row['result'] ||
+          !worksheetStore.worksheetIsLocked || !!worksheetStore.selectedMethod?.const_weight_rule
+        "
         input-class="text-h4 text-left"
         mask="#.####"
         fill-mask="0"
@@ -91,6 +107,13 @@
     >
       <span class="text-h4"> {{ rowProps.row.result }}{{ rowProps.row.result ? '%' : '' }}</span>
     </q-td>
+    <q-td>
+      <span class="text-h4">
+        {{
+          rowProps.row['exported_at'] ? (rowProps.row['exported_at'] as Date).toLocaleString() : ''
+        }}
+      </span>
+    </q-td>
     <q-td
       v-for="col in noRequiredVisibleColumns"
       :key="col.name"
@@ -106,35 +129,44 @@
       :props="rowProps"
       class="sub-weighting"
     >
-      <q-td colspan="100%">
+      <q-td colspan="3">
         <div>
-          <span>Вес №{{ index + 1 }}</span>
+          <span>Масса №{{ index + 1 }}</span>
           <q-input
-            v-model.number="sub_weighting.weight"
-            :readonly="!!rowProps.row['result'] && !worksheetStore.worksheetIsLocked"
+            v-model.trim="sub_weighting.weight"
+            :readonly="!worksheetStore.worksheetIsLocked || !!rowProps.row['result']"
             input-class="text-h4 text-left"
-            type="number"
+            mask="#.####"
+            fill-mask="0"
+            reverse-fill-mask
             borderless
             @blur="
               (event) =>
+                worksheetStore.worksheetIsLocked &&
                 rowProps.row.sub_weightings.length - 1 === index &&
                 !!(event.target as HTMLInputElement)?.value &&
+                Number((event.target as HTMLInputElement).value) !== 0 &&
                 checkConstantWeightMass()
             "
           />
         </div>
+      </q-td>
+      <q-td colspan="4">
+        <span class="text-h4">{{ sub_weighting.weighted_at?.toLocaleString() }}</span>
       </q-td>
     </q-tr>
   </template>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import type { QTableSlots } from 'quasar'
 import { useSettingsStore } from '@/stores/settings'
 import { useWorksheetStore } from '@/stores/worksheet'
 
 const rowProps = defineModel<Parameters<QTableSlots['body']>[0]>('row-props', { required: true })
+
+const isExporting = ref(false)
 
 const settingsStore = useSettingsStore()
 const worksheetStore = useWorksheetStore()
@@ -145,7 +177,6 @@ const noRequiredVisibleColumns = computed(() =>
 
 const calcResult = () => {
   rowProps.value.row.calcResult()
-  // unwatchFinalWeight()
 }
 
 const checkConstantWeightMass = () => {
@@ -158,31 +189,36 @@ const checkConstantWeightMass = () => {
   worksheetStore.saveWorksheet()
 }
 
-// watch(
-//   () => rowProps.value.row.sub_weightings,
-//   (val) => {
-//     if (val) {
-//       checkConstantWeightMass()
-//     }
-//   },
-//   { deep: true },
-// )
+const exportByFile = async () => {
+  isExporting.value = true
+  try {
+    await worksheetStore.exportByFile(rowProps.value.row)
+    rowProps.value.row.exported_at = new Date()
+  } catch (e) {
+    console.error(e)
+  }
+  isExporting.value = false
+}
 
-watch(
+const unwatchFinalWeight = watch(
   () => rowProps.value.row.final_weight,
   (val) => {
+    if (Number(val) === 0) return
     if (val && !rowProps.value.row.result) {
       calcResult()
+      exportByFile()
       worksheetStore.saveWorksheet()
+      unwatchFinalWeight()
     }
   },
 )
 
-watch(
+const unwatchResult = watch(
   () => rowProps.value.row.result,
   (val, prevVal) => {
     if (val && !prevVal) {
       worksheetStore.addParallel()
+      unwatchResult()
     }
   },
 )
@@ -197,7 +233,8 @@ onMounted(() => {
 // border-top-width: 2px;
 // border-top-color: #000 !important;
 // }
-.parallel td:focus-within {
+.parallel td:not(.parallel__actions):focus-within,
+.sub-weighting td:focus-within {
   background-color: $light-blue-3;
 }
 

@@ -12,15 +12,6 @@
   </div>
   <div class="row q-gutter-sm q-pa-sm">
     <q-select
-      v-model="worksheetStore.selectedScale"
-      :options="[...scalesStore.scales.values()].filter((scale) => scale.enabled)"
-      :readonly="worksheetStore.worksheetIsLocked"
-      option-label="name"
-      label="Весы"
-      class="col text-h6"
-      clearable
-    />
-    <q-select
       v-model="worksheetStore.selectedMethod"
       :options="[...methodsStore.methods.values()].filter((scale) => scale.enabled)"
       :readonly="worksheetStore.worksheetIsLocked"
@@ -29,10 +20,20 @@
       class="col text-h6"
       clearable
     />
+    <q-select
+      v-model="worksheetStore.selectedScale"
+      :options="[...scalesStore.scales.values()].filter((scale) => scale.enabled)"
+      :readonly="worksheetStore.worksheetIsLocked"
+      option-label="name"
+      label="Весы"
+      class="col text-h6"
+      clearable
+    />
   </div>
   <div class="row q-gutter-sm q-pa-sm">
     <q-btn
       icon="folder"
+      :disable="worksheetStore.worksheetIsLocked"
       @click="worksheetStore.openWorksheet"
     >
       Открыть
@@ -47,7 +48,7 @@
       :disable="worksheetStore.worksheetIsLocked || worksheetStore.sheetData.length === 0"
       @click="worksheetStore.clearWorksheet"
     >
-      Очистить лист
+      Закрыть лист
     </q-btn>
     <q-btn
       :icon="worksheetStore.worksheetIsLocked ? 'stop' : 'play_arrow'"
@@ -80,6 +81,13 @@
       </q-tooltip>
     </q-btn>
   </div>
+  <div class="row q-gutter-sm q-ma-sm">
+    {{
+      worksheetStore.worksheetFileName
+        ? `Открытый файл: ${worksheetStore.worksheetFileName}`
+        : 'Откройте ранее сохранный рабочий лист или начните работу с чистого листа'
+    }}
+  </div>
   <q-table
     row-key="lab_id"
     :rows="sheetData"
@@ -106,7 +114,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, toRaw } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useUsersStore } from '@/stores/users'
 import { useScalesStore } from '@/stores/scales'
 import { useMethodsStore } from '@/stores/methods'
@@ -155,19 +163,16 @@ const sheetData = computed(() => {
 })
 
 const runSerialPort = async () => {
-  await window.serialPort.initSerialPort(toRaw(worksheetStore.selectedScale))
-}
-
-const closeSerialPort = async () => {
-  await window.serialPort.closeSerialPort()
+  if (!worksheetStore.selectedScale) return
+  await window.serialPort.initSerialPort(worksheetStore.selectedScale.regex)
 }
 
 const toggleWork = async () => {
   if (!worksheetStore.worksheetIsLocked) {
     runSerialPort()
   } else {
-    closeSerialPort()
-    worksheetStore.toggleWorksheetLocking(false)
+    const res = await window.serialPort.closeSerialPort()
+    if (res) worksheetStore.toggleWorksheetLocking(false)
   }
 }
 
@@ -184,7 +189,7 @@ onMounted(async () => {
     }
   })
   await window.serialPort.successfulOpenSerialPort((data: boolean) => {
-    if (data) worksheetStore.toggleWorksheetLocking()
+    if (data) worksheetStore.toggleWorksheetLocking(true)
   })
 })
 </script>

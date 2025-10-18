@@ -10,13 +10,25 @@
     />
     <q-input
       v-model="settings.settings.export.folder_path"
-      label="Папка экспорта результата"
+      label="Папка экспорта результатов"
     />
+    <q-input
+      v-model="settings.settings.export.extension"
+      label="Формат"
+    />
+    <q-input
+      v-model="settings.settings.export.data_template"
+      type="textarea"
+      label="Шаблон"
+    />
+    <span>
+      <i>Используйте формат <b>{variable}</b> для экспорта данных</i>
+    </span>
     <!-- <q-toggle label="Передача данных по строчно" /> -->
   </q-form>
   <div class="row no-wrap items-center q-mt-md q-pa-sm">
     <q-space />
-    <q-btn>Save</q-btn>
+    <q-btn @click="settings.saveSettings">Save</q-btn>
   </div>
 </template>
 

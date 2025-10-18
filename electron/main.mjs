@@ -12,7 +12,7 @@ import {
   handleGetSettings,
   handleSetSettings,
 } from './settings/settings.mjs'
-import { openWorksheet, saveWorksheet } from './worksheet.mjs'
+import { openWorksheet, saveWorksheet, exportToFile } from './worksheet.mjs'
 import serialSingleton, { handleCloseSerialPort, handleInitSerialPort } from './serialport.mjs'
 
 function createWindow() {
@@ -51,8 +51,8 @@ app.whenReady().then(() => {
   ipcMain.handle('getScales', handleGetScales)
   ipcMain.handle('setMethods', handleSetMethods)
   ipcMain.handle('getMethods', handleGetMethods)
-  ipcMain.handle('setSettings', handleSetSettings)
-  ipcMain.handle('getSettings', handleGetSettings)
+  ipcMain.handle('settings:save', handleSetSettings)
+  ipcMain.handle('settings:load', handleGetSettings)
   ipcMain.on('serial-port:init', (event, payload) =>
     handleInitSerialPort(
       sendSuccessOpenPortToRenderer(mainWindow),
@@ -62,8 +62,10 @@ app.whenReady().then(() => {
   )
   ipcMain.handle('serial-port:close', handleCloseSerialPort)
 
-  ipcMain.on('worksheet:save', saveWorksheet)
+  ipcMain.handle('worksheet:save', saveWorksheet)
   ipcMain.handle('worksheet:open', openWorksheet)
+
+  ipcMain.handle('export:file', exportToFile)
 
   createWorksheetFolder()
 

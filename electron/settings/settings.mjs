@@ -37,6 +37,8 @@ function defaultSettings() {
       url: '',
       worksheet_folder_path: path.join(app.getPath('documents'), 'ProgressBalance'),
       folder_path: '',
+      extension: '',
+      data_template: '{lab_id}={result}',
     },
     worksheet_columns: [
       { name: 'expand', required: true, visible: true },
@@ -46,9 +48,9 @@ function defaultSettings() {
       { name: 'sample_weight', required: true, visible: true },
       { name: 'final_weight', required: true, visible: true },
       { name: 'result', required: true, visible: true },
+      { name: 'exported_at', required: true, visible: true },
       { name: 'laborant', visible: false },
       { name: 'calculated_at', visible: false },
-      { name: 'exported_at', visible: false },
       { name: 'scale_no', visible: false },
     ],
     serial_port: {
@@ -65,7 +67,7 @@ function defaultSettings() {
 export function handleSetSettings(event, payload) {
   try {
     const appConfigFolder = getAppConfigFolder()
-    fs.writeFileSync(path.join(appConfigFolder, 'config.json'), JSON.stringify(payload), 'utf8')
+    fs.writeFileSync(path.join(appConfigFolder, 'config.json'), payload, 'utf8')
     return true
   } catch (e) {
     console.log(e)
@@ -77,7 +79,7 @@ export function handleGetSettings() {
   try {
     const appConfigFolder = getAppConfigFolder()
     const configStr = fs.readFileSync(path.join(appConfigFolder, 'config.json'), 'utf8')
-    return JSON.parse(configStr)
+    return configStr
   } catch (e) {
     console.error(e)
   }

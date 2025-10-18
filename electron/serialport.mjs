@@ -14,7 +14,7 @@ class SerialSingleton {
     return this
   }
 
-  init(config, openPortCallback, callback, scale) {
+  init(config, openPortCallback, callback, regex) {
     if (this.port) {
       this.port.close(() => {
         console.log('Порт закрыт')
@@ -38,7 +38,7 @@ class SerialSingleton {
     })
 
     this.parser = this.port.pipe(
-      new RegexParser({ regex: new RegExp(scale.regex, 'i'), encoding: 'utf8' }),
+      new RegexParser({ regex: new RegExp(regex, 'i'), encoding: 'utf8' }),
     )
     this.parser.on('data', callback)
 
@@ -47,7 +47,7 @@ class SerialSingleton {
 
   close() {
     if (this.port && this.port.isOpen) {
-      this.port.close(() => {
+      return this.port.close(() => {
         console.log('Порт закрыт')
       })
     }
@@ -56,13 +56,24 @@ class SerialSingleton {
 
 const serialSingleton = new SerialSingleton()
 
-export async function handleInitSerialPort(openPortCallback, dataCallback, scale) {
-  const config = handleGetSettings()
-  serialSingleton.init(config.serial_port, openPortCallback, dataCallback, scale)
+export async function handleInitSerialPort(openPortCallback, dataCallback, regex) {
+  try {
+    const strSetting = handleGetSettings()
+    const setting = JSON.parse(strSetting)
+    serialSingleton.init(setting.serial_port, openPortCallback, dataCallback, regex)
+  } catch (e) {
+    console.log(e)
+  }
 }
 
 export async function handleCloseSerialPort() {
-  serialSingleton.close()
+  try {
+    serialSingleton.close()
+    return true
+  } catch (e) {
+    console.error(e)
+    return false
+  }
 }
 
 export default serialSingleton
