@@ -55,7 +55,7 @@
       <q-input
         v-model.trim="rowProps.row.crucible_weight"
         input-class="text-h4 text-left"
-        :readonly="!worksheetStore.worksheetIsLocked || !!rowProps.row['result']"
+        :readonly="!worksheetStore.worksheetIsLocked || !!rowProps.row['result'] || isPortOpen"
         mask="#.####"
         fill-mask="0"
         reverse-fill-mask
@@ -70,7 +70,7 @@
       <q-input
         v-model.trim="rowProps.row.sample_weight"
         input-class="text-h4 text-left"
-        :readonly="!worksheetStore.worksheetIsLocked || !!rowProps.row['result']"
+        :readonly="!worksheetStore.worksheetIsLocked || !!rowProps.row['result'] || isPortOpen"
         mask="#.####"
         fill-mask="0"
         reverse-fill-mask
@@ -85,14 +85,17 @@
       <q-input
         v-model.trim="rowProps.row.final_weight"
         :readonly="
-          // !!rowProps.row['result'] ||
-          !worksheetStore.worksheetIsLocked || !!worksheetStore.selectedMethod?.const_weight_rule
+          !!rowProps.row['result'] ||
+          !worksheetStore.worksheetIsLocked ||
+          !!worksheetStore.selectedMethod?.const_weight_rule ||
+          isPortOpen
         "
         input-class="text-h4 text-left"
         mask="#.####"
         fill-mask="0"
         reverse-fill-mask
         borderless
+        :tabindex="!!worksheetStore.selectedMethod?.const_weight_rule ? -1 : 0"
         @blur="calcResult"
       />
     </q-td>
@@ -105,7 +108,10 @@
       }"
       :style="rowProps.colsMap['result'].style"
     >
-      <span class="text-h4"> {{ rowProps.row.result }}{{ rowProps.row.result ? '%' : '' }}</span>
+      <span class="text-h4">
+        {{ rowProps.row.result ? rowProps.row.result.toFixed(2) : ''
+        }}{{ rowProps.row.result ? '%' : '' }}</span
+      >
     </q-td>
     <q-td>
       <span class="text-h4">
@@ -134,7 +140,7 @@
           <span>Масса №{{ index + 1 }}</span>
           <q-input
             v-model.trim="sub_weighting.weight"
-            :readonly="!worksheetStore.worksheetIsLocked || !!rowProps.row['result']"
+            :readonly="!worksheetStore.worksheetIsLocked || !!rowProps.row['result'] || isPortOpen"
             input-class="text-h4 text-left"
             mask="#.####"
             fill-mask="0"
@@ -151,7 +157,7 @@
           />
         </div>
       </q-td>
-      <q-td colspan="4">
+      <q-td colspan="5">
         <span class="text-h4">{{ sub_weighting.weighted_at?.toLocaleString() }}</span>
       </q-td>
     </q-tr>
@@ -159,17 +165,20 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch, inject } from 'vue'
 import type { QTableSlots } from 'quasar'
 import { useSettingsStore } from '@/stores/settings'
 import { useWorksheetStore } from '@/stores/worksheet'
 
 const rowProps = defineModel<Parameters<QTableSlots['body']>[0]>('row-props', { required: true })
 
+const props = defineProps<{ uuid: string }>()
+
+const isPortOpen = inject<boolean>('is-port-open')
 const isExporting = ref(false)
 
 const settingsStore = useSettingsStore()
-const worksheetStore = useWorksheetStore()
+const worksheetStore = useWorksheetStore(props.uuid)
 
 const noRequiredVisibleColumns = computed(() =>
   settingsStore.settings.worksheet_columns.filter((col) => !col.required && col.visible),
@@ -192,7 +201,7 @@ const checkConstantWeightMass = () => {
 const exportByFile = async () => {
   isExporting.value = true
   try {
-    await worksheetStore.exportByFile(rowProps.value.row)
+    await worksheetStore.exportByURL(rowProps.value.row)
     rowProps.value.row.exported_at = new Date()
   } catch (e) {
     console.error(e)

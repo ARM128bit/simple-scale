@@ -9,23 +9,12 @@
       class="col text-h6"
       clearable
     />
-  </div>
-  <div class="row q-gutter-sm q-pa-sm">
     <q-select
       v-model="worksheetStore.selectedMethod"
       :options="[...methodsStore.methods.values()].filter((scale) => scale.enabled)"
       :readonly="worksheetStore.worksheetIsLocked"
       option-label="name"
       label="Метод"
-      class="col text-h6"
-      clearable
-    />
-    <q-select
-      v-model="worksheetStore.selectedScale"
-      :options="[...scalesStore.scales.values()].filter((scale) => scale.enabled)"
-      :readonly="worksheetStore.worksheetIsLocked"
-      option-label="name"
-      label="Весы"
       class="col text-h6"
       clearable
     />
@@ -52,32 +41,18 @@
     </q-btn>
     <q-btn
       :icon="worksheetStore.worksheetIsLocked ? 'stop' : 'play_arrow'"
-      :disable="
-        !worksheetStore.selectedMethod ||
-        !worksheetStore.selectedScale ||
-        !worksheetStore.selectedUser ||
-        !settingsStore.settings.serial_port.path
-      "
-      @click="toggleWork"
+      :disable="!worksheetStore.selectedMethod || !worksheetStore.selectedUser"
+      @click="() => worksheetStore.toggleWorksheetLocking()"
     >
       {{ worksheetStore.worksheetIsLocked ? 'Остановить работу' : 'Начать работу' }}
       <q-tooltip
-        v-if="
-          !worksheetStore.selectedMethod ||
-          !worksheetStore.selectedScale ||
-          !worksheetStore.selectedUser ||
-          !settingsStore.settings.serial_port.path
-        "
+        v-if="!worksheetStore.selectedMethod || !worksheetStore.selectedUser"
         anchor="top middle"
         self="bottom middle"
         :offset="[10, 10]"
         class="bg-orange-5 text-body2"
       >
-        {{
-          !settingsStore.settings.serial_port.path
-            ? 'Необходимо в настройках указать путь COM порта'
-            : 'Для начала работы необходимо выбрать весы, метод и пользователя'
-        }}
+        {{ 'Для начала работы необходимо выбрать весы, метод и пользователя' }}
       </q-tooltip>
     </q-btn>
   </div>
@@ -102,6 +77,7 @@
       <row-parallel
         :key="props.rowIndex"
         :row-props="props"
+        :uuid="tab.uuid"
       />
     </template>
   </q-table>
@@ -114,19 +90,17 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, watch } from 'vue'
 import { useUsersStore } from '@/stores/users'
-import { useScalesStore } from '@/stores/scales'
 import { useMethodsStore } from '@/stores/methods'
-import { useSettingsStore } from '@/stores/settings'
-import { absoluteComparsion, relativeComparsion, useWorksheetStore } from '../../stores/worksheet'
+import { absoluteComparsion, relativeComparsion, useWorksheetStore } from '@/stores/worksheet'
 import RowParallel from './RowParallel.vue'
 
+const tab = defineModel<IWorksheetTab>('tab', { required: true })
+
 const usersStore = useUsersStore()
-const scalesStore = useScalesStore()
 const methodsStore = useMethodsStore()
-const settingsStore = useSettingsStore()
-const worksheetStore = useWorksheetStore()
+const worksheetStore = useWorksheetStore(tab.value.uuid)
 
 const sheetData = computed(() => {
   const data = []
@@ -162,36 +136,20 @@ const sheetData = computed(() => {
   return data
 })
 
-const runSerialPort = async () => {
-  if (!worksheetStore.selectedScale) return
-  await window.serialPort.initSerialPort(worksheetStore.selectedScale.regex)
-}
+watch(
+  () => ({ laborant: worksheetStore.selectedUser, method: worksheetStore.selectedMethod }),
+  ({ laborant, method }) => {
+    tab.value.method = method
+    tab.value.laborant = laborant
+  },
+)
 
-const toggleWork = async () => {
-  if (!worksheetStore.worksheetIsLocked) {
-    runSerialPort()
-  } else {
-    const res = await window.serialPort.closeSerialPort()
-    if (res) worksheetStore.toggleWorksheetLocking(false)
-  }
-}
-
-onMounted(async () => {
-  await window.serialPort.listenSerialPort((data: string) => {
-    const input = document.activeElement as HTMLInputElement
-    if (input) {
-      input.value = data
-      // const tabEvent = new KeyboardEvent('keyup', { key: 'Tab', bubbles: true })
-      input.dispatchEvent(new Event('input', { bubbles: true }))
-      // setTimeout(() => {
-      //   document.dispatchEvent(tabEvent)
-      // }, 0)
-    }
-  })
-  await window.serialPort.successfulOpenSerialPort((data: boolean) => {
-    if (data) worksheetStore.toggleWorksheetLocking(true)
-  })
-})
+watch(
+  () => worksheetStore.worksheetIsLocked,
+  (val) => {
+    tab.value.isLocked = val
+  },
+)
 </script>
 
 <style scoped lang="scss"></style>

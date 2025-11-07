@@ -5,7 +5,19 @@ export class User implements IUser {
   private _enabled: boolean
   private _created_at: string | undefined
 
-  constructor({ id, first_name, last_name, enabled, created_at }: IUser) {
+  constructor({
+    id,
+    first_name,
+    last_name,
+    enabled,
+    created_at,
+  }: {
+    id?: number
+    first_name: string
+    last_name: string
+    enabled: boolean
+    created_at?: string | undefined
+  }) {
     this._id = id
     this._first_name = first_name
     this._last_name = last_name

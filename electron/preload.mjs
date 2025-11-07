@@ -25,5 +25,6 @@ contextBridge.exposeInMainWorld('worksheet', {
 })
 
 contextBridge.exposeInMainWorld('export', {
+  exportToURL: (payload) => ipcRenderer.invoke('export:url', payload),
   exportToFile: (payload) => ipcRenderer.invoke('export:file', payload),
 })

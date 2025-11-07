@@ -3,13 +3,13 @@ import type { QTableColumn } from 'quasar'
 declare global {
   interface Window {
     settings: {
-      getMethods: () => Promise<unknown>
+      getMethods: () => Promise<IMethod[]>
       setMethods: (payload: unknown) => Promise<unknown>
-      getUsers: () => Promise<unknown>
+      getUsers: () => Promise<IUser[]>
       setUsers: (payload: unknown) => Promise<unknown>
       getSettings: () => Promise<string>
       setSettings: (payload: string) => Promise<boolean>
-      getScales: () => Promise<unknown>
+      getScales: () => Promise<IScale[]>
       setScales: (payload: unknown) => Promise<unknown>
     }
     serialPort: {
@@ -23,8 +23,16 @@ declare global {
       saveWorksheet: (payload: unknown) => Promise<string>
     }
     export: {
+      exportToURL: (payload: string) => Promise<void>
       exportToFile: (payload: { username: string; method: string; data: string }) => Promise<void>
     }
+  }
+
+  interface IWorksheetTab {
+    uuid: string
+    isLocked: boolean
+    method: IMethod | undefined
+    laborant: IUser | undefined
   }
 
   /**

@@ -24,31 +24,18 @@ export async function saveWorksheet(event, { username, method, data, path: works
   try {
     const strSetting = handleGetSettings()
     const settings = JSON.parse(strSetting)
-    const now = new Date().toISOString().split('T')[0]
+    const now = new Date()
+    const nowPath =
+      now.toISOString().split('T')[0].replace(/-/g, '') +
+      '_' +
+      now.toLocaleTimeString().replace(/:/g, '-').slice(0, 5)
+
     const filePath = worksheet_path
       ? worksheet_path
-      : path.join(settings.export.worksheet_folder_path, `${username}_${method}_${now}.csv`)
+      : path.join(settings.export.worksheet_folder_path, `${username}_${method}_${nowPath}.csv`)
     fs.writeFileSync(filePath, data, 'utf8')
     return filePath
   } catch (e) {
     console.error(e)
   }
-}
-
-export async function exportToFile(event, { username, method, data }) {
-  // try {
-  const strSetting = handleGetSettings()
-  const settings = JSON.parse(strSetting)
-  const now = new Date().toISOString()
-  const _path = path.join(
-    settings.export.folder_path,
-    `${username}_${method}_${now}.${settings.export.extension}`,
-  )
-
-  fs.writeFileSync(_path, data, 'utf8')
-  //   return true
-  // } catch (e) {
-  //   console.error(e)
-  //   return false
-  // }
 }

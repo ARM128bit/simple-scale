@@ -108,19 +108,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useUsersStore } from '@/stores/users'
+import { ref, reactive } from 'vue'
 import type { QTableColumn } from 'quasar'
-import { reactive } from 'vue'
+import { useUsersStore } from '@/stores/users'
+import { User } from '@/entities/user.class'
 
 const usersStore = useUsersStore()
 
 const defaultUser = (): IUser => {
-  return {
-    first_name: '',
-    last_name: '',
-    enabled: true,
-  }
+  return new User({ first_name: '', last_name: '', enabled: true })
 }
 const showAddUserForm = ref(false)
 const addUserForm = reactive(defaultUser())

@@ -144,7 +144,13 @@ export default abstract class Parallel implements IParallel {
   }
 
   determineFinalWeightByConstWeightRule(): string | undefined {
-    if (!this._sub_weightings || !this._method.const_weight_rule || !this._sample_weight) return
+    if (
+      !this._sub_weightings ||
+      !this._method.const_weight_rule ||
+      !this._sample_weight ||
+      !this._crucible_weight
+    )
+      return
     const regex = /[-+]?\d+(\.\d+)/i
     const constWeightRule = this._method.const_weight_rule.match(regex)
     const regexPercentage = /%/i
@@ -155,15 +161,17 @@ export default abstract class Parallel implements IParallel {
     const subWeightings = [...this._sub_weightings.values()]
     const lastWeight = Number(subWeightings[subWeightings.length - 1].weight) ?? 0
     const prevLastWeight = Number(subWeightings[subWeightings.length - 2].weight) ?? 0
-    if (lastWeight > prevLastWeight) return (this.final_weight = prevLastWeight.toString())
+    if (lastWeight > prevLastWeight) {
+      return (this.final_weight = prevLastWeight.toFixed(4))
+    }
     if (
       percentageMatch &&
       ((prevLastWeight - lastWeight) / Number(this._sample_weight)) * 100 <= constWeightRuleValue
     ) {
-      return (this.final_weight = lastWeight.toString())
+      return (this.final_weight = lastWeight.toFixed(4))
     }
     if (!percentageMatch && prevLastWeight - lastWeight <= constWeightRuleValue) {
-      return (this.final_weight = lastWeight.toString())
+      return (this.final_weight = lastWeight.toFixed(4))
     }
   }
 

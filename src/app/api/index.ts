@@ -1,2 +1,6 @@
-export * from './worksheet.ts'
+export * from './users.ts'
+export * from './scales.ts'
 export * from './export.ts'
+export * from './methods.ts'
+export * from './settings.ts'
+export * from './worksheet.ts'

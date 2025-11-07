@@ -44,11 +44,11 @@ export default class ResidueParallel extends Parallel {
             : [
                 {
                   weight: null,
-                  weighted_at: '',
+                  weighted_at: null,
                 },
                 {
                   weight: null,
-                  weighted_at: '',
+                  weighted_at: null,
                 },
               ],
         ),
@@ -62,9 +62,7 @@ export default class ResidueParallel extends Parallel {
       const crucible_weight = Number(this._crucible_weight.replace(',', '.'))
       const final_weight = Number(this._final_weight.replace(',', '.'))
       const sample_weight = Number(this._sample_weight.replace(',', '.'))
-      this._result = Number(
-        (((final_weight - crucible_weight) / sample_weight) * 100).toPrecision(2),
-      )
+      this._result = Number(((final_weight - crucible_weight) / sample_weight) * 100)
     }
   }
 }

@@ -4,7 +4,7 @@ export function handleSetScales(event, payload) {
   try {
     db.exec('DELETE FROM scales;')
     const insertStatement = db.prepare(
-      'INSERT INTO scales (code, name, enabled, regex) VALUES (?, ?, ?, ?)',
+      'INSERT INTO scales (code, name, enabled, regex, serial_no) VALUES (?, ?, ?, ?, ?)',
     )
     for (const scale of payload) {
       insertStatement.run(scale.code, scale.name, +scale.enabled, scale.regex)

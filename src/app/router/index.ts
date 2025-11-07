@@ -1,20 +1,20 @@
 import SettingMain from '@/pages/settings/SettingMain.vue'
 import MethodsList from '@/pages/settings/SettingMethods.vue'
 import UsersList from '@/pages/settings/SettingUsers.vue'
-import WorkSheet from '@/pages/worksheet/WorkSheet.vue'
 import { createRouter, createWebHashHistory } from 'vue-router'
 import SettingExport from '@/pages/settings/SettingExport.vue'
 import SettingWorksheet from '@/pages/settings/SettingWorksheet.vue'
 import SettingScales from '@/pages/settings/SettingScales.vue'
 import SettingSerialPort from '@/pages/settings/SettingSerialPort.vue'
+import WorksheetDesk from '@/pages/worksheet/WorksheetDesk.vue'
 
 const router = createRouter({
   history: createWebHashHistory(),
   routes: [
     {
       path: '/',
-      name: 'worksheet',
-      component: WorkSheet,
+      component: WorksheetDesk,
+      name: 'worksheet-desk',
     },
     {
       path: '/settings',

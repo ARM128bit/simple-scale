@@ -1,5 +1,10 @@
-import db from './database.mjs'
+import path from 'path'
+import { DatabaseSync } from 'node:sqlite'
 import { handleSetMethods } from './settings/methods.mjs'
+import { handleSetUsers } from './settings/users.mjs'
+import { handleSetScales } from './settings/scales.mjs'
+import { getAppDataPath } from './settings/settings.mjs'
+import db from './database.mjs'
 
 const usersSQL = `CREATE TABLE IF NOT EXISTS users (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -13,7 +18,8 @@ const scalesSQL = `CREATE TABLE IF NOT EXISTS scales (
   code TEXT NOT NULL PRIMARY KEY,
   name TEXT NOT NULL,
   enabled INTEGER NOT NULL DEFAULT 1,
-  regex TEXT NOT NULL
+  regex TEXT NOT NULL,
+  serial_no TEXT NULL
 );`
 
 const methodsSQL = `CREATE TABLE IF NOT EXISTS methods (
@@ -73,6 +79,25 @@ const methods = [
   },
 ]
 
+const users = [
+  {
+    first_name: 'Yuri',
+    last_name: 'Antonevich',
+    enabled: 1,
+  },
+]
+
+const scales = [
+  {
+    code: 'usb',
+    name: 'usb',
+    enabled: 1,
+    regex: '(\\d+.\\d+)',
+  },
+]
+
+handleSetUsers(null, users)
+handleSetScales(null, scales)
 handleSetMethods(null, methods)
 
 db.close()

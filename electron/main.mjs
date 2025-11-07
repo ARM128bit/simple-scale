@@ -12,7 +12,8 @@ import {
   handleGetSettings,
   handleSetSettings,
 } from './settings/settings.mjs'
-import { openWorksheet, saveWorksheet, exportToFile } from './worksheet.mjs'
+import { exportToFile, exportToURL } from './export.mjs'
+import { openWorksheet, saveWorksheet } from './worksheet.mjs'
 import serialSingleton, { handleCloseSerialPort, handleInitSerialPort } from './serialport.mjs'
 
 function createWindow() {
@@ -20,11 +21,11 @@ function createWindow() {
     width: 1024,
     height: 768,
     webPreferences: {
-      preload: path.join(import.meta.dirname, 'preload.js'),
+      preload: path.join(import.meta.dirname, 'preload.mjs'),
       nodeIntegration: true,
     },
   })
-  win.webContents.openDevTools()
+  win.webContents.openDevTools({ mode: 'detach' })
 
   // win.loadFile('dist/index.html')
   win.loadURL('http://localhost:5173')
@@ -53,6 +54,7 @@ app.whenReady().then(() => {
   ipcMain.handle('getMethods', handleGetMethods)
   ipcMain.handle('settings:save', handleSetSettings)
   ipcMain.handle('settings:load', handleGetSettings)
+
   ipcMain.on('serial-port:init', (event, payload) =>
     handleInitSerialPort(
       sendSuccessOpenPortToRenderer(mainWindow),
@@ -66,6 +68,7 @@ app.whenReady().then(() => {
   ipcMain.handle('worksheet:open', openWorksheet)
 
   ipcMain.handle('export:file', exportToFile)
+  ipcMain.handle('export:url', exportToURL)
 
   createWorksheetFolder()
 

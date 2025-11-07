@@ -22,7 +22,7 @@ onMounted(() => {
 <template>
   <DefaultLayout>
     <router-view v-slot="{ Component }">
-      <keep-alive include="WorkSheet">
+      <keep-alive>
         <component
           :is="Component"
           :key="$route.fullPath"

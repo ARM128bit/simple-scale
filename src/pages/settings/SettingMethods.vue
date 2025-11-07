@@ -207,10 +207,11 @@
             />
           </q-td>
           <q-td>
-            <q-input
+            <q-select
               v-model="addMethodForm.calc_type"
-              input-class="text-left"
-              type="text"
+              :options="CalcTypeOptions"
+              emit-value
+              map-options
               dense
             />
           </q-td>
@@ -237,8 +238,23 @@
           class="repeatability-rule"
           :key="index"
         >
-          <q-td class="text-right"> Диапазон сходимости {{ index + 1 }} </q-td>
-          <q-td colspan="2">
+          <q-td
+            colspan="2"
+            class="text-right"
+          >
+            Диапазон сходимости {{ index + 1 }}
+          </q-td>
+          <q-td>
+            <q-select
+              v-model="rule.type"
+              :options="RepeatabilityTypeOptions"
+              label="Тип"
+              emit-value
+              map-options
+              dense
+            />
+          </q-td>
+          <q-td>
             <q-input
               v-model.number="rule.start"
               input-class="text-left"
@@ -253,14 +269,6 @@
               input-class="text-left"
               label="Конечное значение"
               type="number"
-              dense
-            />
-          </q-td>
-          <q-td>
-            <q-input
-              v-model="rule.type"
-              input-class="text-left"
-              label="Тип"
               dense
             />
           </q-td>

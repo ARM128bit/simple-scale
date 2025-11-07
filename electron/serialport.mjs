@@ -1,4 +1,4 @@
-import { RegexParser, SerialPort } from 'serialport'
+import { ReadlineParser, SerialPort } from 'serialport'
 import { handleGetSettings } from './settings/settings.mjs'
 
 class SerialSingleton {
@@ -14,7 +14,7 @@ class SerialSingleton {
     return this
   }
 
-  init(config, openPortCallback, callback, regex) {
+  init(config, openPortCallback, callback, scale) {
     if (this.port) {
       this.port.close(() => {
         console.log('Порт закрыт')
@@ -36,10 +36,7 @@ class SerialSingleton {
       }
       openPortCallback(true)
     })
-
-    this.parser = this.port.pipe(
-      new RegexParser({ regex: new RegExp(regex, 'i'), encoding: 'utf8' }),
-    )
+    this.parser = this.port.pipe(new ReadlineParser())
     this.parser.on('data', callback)
 
     return this.port
@@ -56,11 +53,11 @@ class SerialSingleton {
 
 const serialSingleton = new SerialSingleton()
 
-export async function handleInitSerialPort(openPortCallback, dataCallback, regex) {
+export async function handleInitSerialPort(openPortCallback, dataCallback, scale) {
   try {
     const strSetting = handleGetSettings()
     const setting = JSON.parse(strSetting)
-    serialSingleton.init(setting.serial_port, openPortCallback, dataCallback, regex)
+    serialSingleton.init(setting.serial_port, openPortCallback, dataCallback, scale)
   } catch (e) {
     console.log(e)
   }

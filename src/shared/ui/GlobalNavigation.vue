@@ -6,17 +6,17 @@
       class="bg-purple text-white shadow-2"
     >
       <q-route-tab
-        :to="{ name: 'worksheet' }"
+        :to="{ name: 'worksheet-desk' }"
         label="Worksheet"
       />
 
+      <!-- :disable="worksheetStore.worksheetIsLocked" -->
       <q-route-tab
         :to="{ name: 'settings' }"
         label="Settings"
-        :disable="worksheetStore.worksheetIsLocked"
       >
+        <!-- v-if="worksheetStore.worksheetIsLocked" -->
         <q-tooltip
-          v-if="worksheetStore.worksheetIsLocked"
           anchor="bottom middle"
           self="top middle"
           :offset="[10, 10]"
@@ -29,10 +29,6 @@
   </nav>
 </template>
 
-<script setup lang="ts">
-import { useWorksheetStore } from '@/stores/worksheet'
-
-const worksheetStore = useWorksheetStore()
-</script>
+<script setup lang="ts"></script>
 
 <style scoped></style>

@@ -1,5 +1,6 @@
 import { computed, ref, reactive, toRaw } from 'vue'
 import { defineStore } from 'pinia'
+import { scalesAPI } from '@/app/api'
 
 export const useScalesStore = defineStore('scales', () => {
   const loading = ref(false)
@@ -7,14 +8,19 @@ export const useScalesStore = defineStore('scales', () => {
 
   async function saveScales() {
     // Should not be a proxy object
-    await window.settings.setScales([...toRaw(scales).values()])
+    await scalesAPI.save([...toRaw(scales).values()])
+    loadScales()
+  }
+
+  async function addScale(scale: IScale) {
+    await scalesAPI.save([...toRaw(scales).values(), toRaw(scale)])
     loadScales()
   }
 
   async function loadScales() {
     loading.value = true
     try {
-      const res = (await window.settings.getScales()) as IScale[]
+      const res = await scalesAPI.load()
       scales.clear()
       for (const scale of res) {
         scales.set(scale.code, { ...scale, enabled: Boolean(scale.enabled) })
@@ -24,11 +30,6 @@ export const useScalesStore = defineStore('scales', () => {
     } finally {
       loading.value = false
     }
-  }
-
-  async function addScale(scale: IScale) {
-    await window.settings.setScales([...toRaw(scales).values(), toRaw(scale)])
-    loadScales()
   }
 
   async function deleteScale(key: IScale['code']) {

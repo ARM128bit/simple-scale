@@ -6,5 +6,7 @@ export const exportAPI = {
       data,
     })
   },
-  async exportByURL() {},
+  async exportByURL(url: string) {
+    return await window.export.exportToURL(url)
+  },
 }

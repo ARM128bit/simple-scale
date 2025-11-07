@@ -1,5 +1,6 @@
 import { ref, reactive } from 'vue'
 import { defineStore } from 'pinia'
+import { settingsAPI } from '@/app/api'
 
 export const useSettingsStore = defineStore('settings', () => {
   const loading = ref(false)
@@ -104,17 +105,14 @@ export const useSettingsStore = defineStore('settings', () => {
   async function saveSettings() {
     loading.value = true
     try {
-      console.log(settings)
       // Should not be a proxy object
-      await window.settings.setSettings(
-        JSON.stringify({
-          ...settings,
-          worksheet_columns: settings.worksheet_columns.map((col) => ({
-            name: col.name,
-            visible: col.visible ?? false,
-          })),
-        }),
-      )
+      await settingsAPI.save({
+        ...settings,
+        worksheet_columns: settings.worksheet_columns.map((col) => ({
+          name: col.name,
+          visible: col.visible ?? false,
+        })),
+      })
       loadSettings()
     } catch (e: unknown) {
       console.log(e)
@@ -126,8 +124,7 @@ export const useSettingsStore = defineStore('settings', () => {
   async function loadSettings() {
     loading.value = true
     try {
-      const res = await window.settings.getSettings()
-      const _settings = JSON.parse(res) as ISetting
+      const _settings = await settingsAPI.load()
       Object.assign(settings, {
         export: _settings.export,
         serial_port: _settings.serial_port,
