@@ -8,10 +8,10 @@ export default defineConfig({
     vue({
       template: { transformAssetUrls },
     }),
-    // vueDevTools(),
     // @quasar/plugin-vite options list:
     // https://github.com/quasarframework/quasar/blob/dev/vite-plugin/index.d.ts
     quasar({
+      autoImportComponentCase: 'kebab',
       sassVariables: fileURLToPath(
         new URL('./src/shared/styles/quasar.variables.sass', import.meta.url),
       ),

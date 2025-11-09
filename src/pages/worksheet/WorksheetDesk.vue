@@ -98,6 +98,7 @@ import { computed, defineAsyncComponent, onMounted, ref, toRaw, provide } from '
 import { useScalesStore } from '@/stores/scales'
 import { useSettingsStore } from '@/stores/settings'
 import { useWorksheetStore } from '@/stores/worksheet'
+import { Notify } from 'quasar'
 
 const WorksheetItem = defineAsyncComponent(() => import('./WorksheetItem.vue'))
 
@@ -156,7 +157,7 @@ onMounted(async () => {
   await window.serialPort.listenSerialPort((data: string) => {
     const input = document.activeElement as HTMLInputElement
     if (!selectedScale.value?.regex) return
-    const value = data.match(selectedScale.value?.regex)?.[0]
+    const value = data.match(selectedScale.value.regex)?.[0]
     if (input && value) {
       input.value = value
       input.dispatchEvent(new Event('input', { bubbles: true }))
@@ -185,6 +186,13 @@ onMounted(async () => {
     }
   })
   await window.serialPort.successfulOpenSerialPort((data: boolean) => {
+    if (!data)
+      Notify.create({
+        message:
+          'Не удалось открыть порт, проверьте подключение весов и/или корректно ли указан путь к COM-порту',
+        icon: 'warning',
+        position: 'top-right',
+      })
     if (data) isPortOpen.value = data
   })
 })
