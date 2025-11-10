@@ -168,7 +168,7 @@ export const useWorksheetStore = cache((name: string) =>
               return obj[key as keyof IParallel]
             })
           const subWeightings = obj.sub_weightings?.map(
-            (item) => `${item.weight}${SUB_WEIGHT_DELIMITER}${item.weighted_at}`,
+            (item) => `${item.weight}${SUB_WEIGHT_DELIMITER}${item.weighted_at?.toISOString()}`,
           )
           csv +=
             values.join(CSV_DELIMITER) +
@@ -188,7 +188,7 @@ export const useWorksheetStore = cache((name: string) =>
 
     const openWorksheet = async () => {
       const res = await worksheetAPI.open()
-      if (!res.data) return
+      if (!res?.data) return
       const data = res.data.split('\n')
       const keys = data
         .splice(0, 1)[0]

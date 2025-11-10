@@ -4,7 +4,7 @@ export function handleSetMethods(event, payload) {
   try {
     db.exec('DELETE FROM methods;')
     const insertStatement = db.prepare(
-      'INSERT INTO methods (code, name, calc_type, const_weight_rule, enabled, created_at) VALUES (?, ?, ?, ?, ?, ?)',
+      'INSERT INTO methods (code, name, significant_digit, calc_type, const_weight_rule, enabled, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
     )
     const insertRuleStatement = db.prepare(
       'INSERT INTO methods_repeatability_rules (code, start, end, type, value) VALUES (?, ?, ?, ?, ?)',
@@ -13,6 +13,7 @@ export function handleSetMethods(event, payload) {
       insertStatement.run(
         method.code,
         method.name,
+        method.significant_digit,
         method.calc_type,
         method.const_weight_rule ?? null,
         +method.enabled,
@@ -36,7 +37,7 @@ export function handleSetMethods(event, payload) {
 
 export function handleGetMethods() {
   const methodsStatement = db.prepare(`SELECT json_object(
-         'code', method.code, 'name', method.name,
+         'code', method.code, 'name', method.name, 'significant_digit', method.significant_digit,
          'calc_type', method.calc_type, 'const_weight_rule', method.const_weight_rule,
          'enabled', method.enabled, 'created_at', method.created_at,
          'repeatability_rules', json_group_array(

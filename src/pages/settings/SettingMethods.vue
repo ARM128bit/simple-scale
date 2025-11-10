@@ -40,6 +40,18 @@
           />
         </q-td>
         <q-td
+          key="significant_digit"
+          :props="props"
+        >
+          <q-input
+            v-model="props.row.significant_digit"
+            :readonly="!editingMethods.has(props.row)"
+            input-class="text-left"
+            type="text"
+            dense
+          />
+        </q-td>
+        <q-td
           key="calc_type"
           :props="props"
         >
@@ -120,7 +132,12 @@
           class="repeatability-rule"
           :key="index"
         >
-          <q-td class="text-right"> Диапазон сходимости {{ index + 1 }} </q-td>
+          <q-td
+            colspan="2"
+            class="text-right"
+          >
+            Диапазон сходимости {{ index + 1 }}
+          </q-td>
           <q-td colspan="2">
             <q-select
               v-model="rule.type"
@@ -207,6 +224,14 @@
             />
           </q-td>
           <q-td>
+            <q-input
+              v-model="addMethodForm.significant_digit"
+              input-class="text-left"
+              type="text"
+              dense
+            />
+          </q-td>
+          <q-td>
             <q-select
               v-model="addMethodForm.calc_type"
               :options="CalcTypeOptions"
@@ -244,7 +269,7 @@
           >
             Диапазон сходимости {{ index + 1 }}
           </q-td>
-          <q-td>
+          <q-td colspan="2">
             <q-select
               v-model="rule.type"
               :options="RepeatabilityTypeOptions"
@@ -325,6 +350,7 @@ const defaultMethod = (): IMethodForm => {
     repeatability_rules: [defaultRepeatabilityRule()],
     calc_type: 'LOSS',
     const_weight_rule: '',
+    significant_digit: 2,
     enabled: true,
   }
 }
@@ -353,6 +379,12 @@ const column: QTableColumn<IMethod & { actions: string }>[] = [
   { name: 'enabled', label: 'Активен?', field: 'enabled', align: 'left' },
   { name: 'code', label: 'Код', field: 'code', align: 'left' },
   { name: 'name', label: 'Наименование', field: 'name', align: 'left' },
+  {
+    name: 'significant_digit',
+    label: 'Значащие разряды',
+    field: 'significant_digit',
+    align: 'left',
+  },
   { name: 'calc_type', label: 'Calc', field: 'calc_type', align: 'left' },
   {
     name: 'const_weight_rule',

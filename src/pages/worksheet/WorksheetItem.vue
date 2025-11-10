@@ -4,7 +4,7 @@
       v-model="worksheetStore.selectedUser"
       :options="usersStore.filteredUsers"
       :option-label="(option: IUser) => `${option.first_name} ${option.last_name}`"
-      :readonly="worksheetStore.worksheetIsLocked"
+      :readonly="worksheetStore.worksheetIsLocked || !!worksheetStore.worksheetFileName"
       label="Пользователь"
       class="col text-h6"
       clearable
@@ -12,7 +12,7 @@
     <q-select
       v-model="worksheetStore.selectedMethod"
       :options="[...methodsStore.methods.values()].filter((scale) => scale.enabled)"
-      :readonly="worksheetStore.worksheetIsLocked"
+      :readonly="worksheetStore.worksheetIsLocked || !!worksheetStore.worksheetFileName"
       option-label="name"
       label="Метод"
       class="col text-h6"
@@ -29,6 +29,7 @@
     </q-btn>
     <q-btn
       icon="save"
+      :disable="!worksheetStore.worksheetFileName"
       @click="worksheetStore.saveWorksheet"
     >
       Сохранить рабочий лист

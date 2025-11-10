@@ -27,7 +27,7 @@ function createWindow() {
   })
   win.webContents.openDevTools({ mode: 'detach' })
 
-  // win.loadFile('dist/index.html')
+  // win.loadFile('dist/prod.html')
   win.loadURL('http://localhost:5173')
   return win
 }

@@ -20,5 +20,5 @@
     "outDir": "electron-app"
   },
   "include": ["electron/**/*"],
-  "exclude": ["src", "electron/populate.ts"]
+  "exclude": ["src", "electron/populate.mjs"]
 }

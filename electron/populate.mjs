@@ -1,10 +1,47 @@
+import os from 'os'
+import fs from 'fs'
 import path from 'path'
-import { DatabaseSync } from 'node:sqlite'
-import { handleSetMethods } from './settings/methods.mjs'
 import { handleSetUsers } from './settings/users.mjs'
 import { handleSetScales } from './settings/scales.mjs'
-import { getAppDataPath } from './settings/settings.mjs'
+import { handleSetMethods } from './settings/methods.mjs'
+import { handleSetSettings } from './settings/settings.mjs'
 import db from './database.mjs'
+
+function getDocumentsPath() {
+  const home = os.homedir()
+
+  if (process.platform === 'win32') {
+    // Windows: usually "C:\Users\<User>\Documents"
+    return path.join(home, 'Documents')
+  }
+
+  if (process.platform === 'darwin') {
+    // macOS: usually "/Users/<User>/Documents"
+    return path.join(home, 'Documents')
+  }
+
+  if (process.platform === 'linux') {
+    // Linux: might vary depending on XDG settings
+    const xdgDocuments = path.join(home, 'Documents')
+    const userDirsFile = path.join(home, '.config', 'user-dirs.dirs')
+
+    try {
+      const content = fs.readFileSync(userDirsFile, 'utf8')
+      const match = content.match(/^XDG_DOCUMENTS_DIR="?(.+)"?$/m)
+      if (match) {
+        let dir = match[1].replace('$HOME', home)
+        return dir
+      }
+    } catch {
+      // Fallback
+    }
+
+    return xdgDocuments
+  }
+
+  // Default fallback
+  return path.join(home, 'Documents')
+}
 
 const usersSQL = `CREATE TABLE IF NOT EXISTS users (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -27,6 +64,7 @@ const methodsSQL = `CREATE TABLE IF NOT EXISTS methods (
   name TEXT NOT NULL,
   calc_type TEXT CHECK( calc_type IN ('LOSS','RESIDUE') ) NOT NULL,
   const_weight_rule TEXT,
+  significant_digit NOT NULL DEFAULT 2,
   enabled INTEGER NOT NULL DEFAULT 0,
   created_at TEXT NOT NULL
 );`
@@ -52,7 +90,8 @@ const methods = [
     code: 'COA__GO111',
     name: 'Зольность',
     calc_type: 'LOSS',
-    const_weight_rule: null,
+    const_weight_rule: '0.2%',
+    significant_digit: 2,
     repeatability_rules: [
       {
         start: 0,
@@ -74,6 +113,7 @@ const methods = [
     name: 'Летучки',
     calc_type: 'LOSS',
     const_weight_rule: null,
+    significant_digit: 2,
     repeatability_rules: [],
     enabled: 1,
   },
@@ -92,12 +132,46 @@ const scales = [
     code: 'usb',
     name: 'usb',
     enabled: 1,
-    regex: '(\\d+.\\d+)',
+    regex: '\\d+.\\d+',
   },
 ]
+
+export function defaultSettings() {
+  return JSON.stringify({
+    export: {
+      url: '',
+      worksheet_folder_path: path.join(getDocumentsPath(), 'ProgressBalance'),
+      folder_path: '',
+      extension: '',
+      data_template: '{lab_id}={result}',
+    },
+    worksheet_columns: [
+      { name: 'expand', required: true, visible: true },
+      { name: 'lab_id', required: true, visible: true },
+      { name: 'crucible_id', required: true, visible: true },
+      { name: 'crucible_weight', required: true, visible: true },
+      { name: 'sample_weight', required: true, visible: true },
+      { name: 'final_weight', required: true, visible: true },
+      { name: 'result', required: true, visible: true },
+      { name: 'exported_at', required: true, visible: true },
+      { name: 'laborant', visible: false },
+      { name: 'calculated_at', visible: false },
+      { name: 'scale_no', visible: false },
+    ],
+    serial_port: {
+      path: '',
+      baudrate: 1200,
+      databits: 7,
+      stopbit: 1,
+      pairly: 'odd',
+      termination_code: 'CRLF',
+    },
+  })
+}
 
 handleSetUsers(null, users)
 handleSetScales(null, scales)
 handleSetMethods(null, methods)
+handleSetSettings(null, defaultSettings())
 
 db.close()

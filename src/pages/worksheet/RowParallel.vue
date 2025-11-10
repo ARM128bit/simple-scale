@@ -14,13 +14,27 @@
         @click="rowProps.row.expand = !rowProps.row.expand"
       />
       <q-btn
-        :disable="!worksheetStore.worksheetIsLocked || !rowProps.row.result"
+        :disable="
+          !worksheetStore.worksheetIsLocked ||
+          !rowProps.row.result ||
+          (!settingsStore.settings.export.url && !settingsStore.settings.export.folder_path)
+        "
         :loading="isExporting"
         size="sm"
         round
         icon="upload"
-        @click="exportByFile"
-      />
+        @click="exportParallel"
+      >
+        <q-tooltip
+          v-if="!settingsStore.settings.export.url && !settingsStore.settings.export.folder_path"
+          anchor="bottom middle"
+          self="top middle"
+          :offset="[10, 10]"
+          class="bg-orange-5 text-body2"
+        >
+          Для экспорта необходимо в настройках указать путь или URL
+        </q-tooltip>
+      </q-btn>
     </q-td>
     <q-td
       key="lab_id"
@@ -53,14 +67,13 @@
       :props="rowProps"
     >
       <q-input
-        v-model.trim="rowProps.row.crucible_weight"
+        :model-value="rowProps.row.crucible_weight"
+        type="number"
         input-class="text-h4 text-left"
         :readonly="!worksheetStore.worksheetIsLocked || !!rowProps.row['result'] || isPortOpen"
-        mask="#.####"
-        fill-mask="0"
-        reverse-fill-mask
+        :disable="!rowProps.row.lab_id || !rowProps.row.crucible_id"
         borderless
-        @blur="worksheetStore.saveWorksheet"
+        @update:model-value="(value) => onChangeValue('crucible_weight', value)"
       />
     </q-td>
     <q-td
@@ -68,14 +81,13 @@
       :props="rowProps"
     >
       <q-input
-        v-model.trim="rowProps.row.sample_weight"
+        :model-value="rowProps.row.sample_weight"
+        type="number"
         input-class="text-h4 text-left"
         :readonly="!worksheetStore.worksheetIsLocked || !!rowProps.row['result'] || isPortOpen"
-        mask="#.####"
-        fill-mask="0"
-        reverse-fill-mask
+        :disable="!rowProps.row.lab_id || !rowProps.row.crucible_id"
         borderless
-        @blur="worksheetStore.saveWorksheet"
+        @update:model-value="(value) => onChangeValue('sample_weight', value)"
       />
     </q-td>
     <q-td
@@ -83,20 +95,19 @@
       :props="rowProps"
     >
       <q-input
-        v-model.trim="rowProps.row.final_weight"
+        :model-value="rowProps.row.final_weight"
+        type="number"
         :readonly="
           !!rowProps.row['result'] ||
           !worksheetStore.worksheetIsLocked ||
           !!worksheetStore.selectedMethod?.const_weight_rule ||
           isPortOpen
         "
+        :disable="!rowProps.row.lab_id || !rowProps.row.crucible_id"
         input-class="text-h4 text-left"
-        mask="#.####"
-        fill-mask="0"
-        reverse-fill-mask
         borderless
         :tabindex="!!worksheetStore.selectedMethod?.const_weight_rule ? -1 : 0"
-        @blur="calcResult"
+        @update:model-value="(value) => onChangeFinalWeight(value)"
       />
     </q-td>
     <q-td
@@ -109,8 +120,11 @@
       :style="rowProps.colsMap['result'].style"
     >
       <span class="text-h4">
-        {{ rowProps.row.result ? rowProps.row.result.toFixed(2) : ''
-        }}{{ rowProps.row.result ? '%' : '' }}</span
+        {{
+          rowProps.row.result
+            ? `${padDecimals(rowProps.row.result, rowProps.row.method.significant_digit)}%`
+            : ''
+        }}</span
       >
     </q-td>
     <q-td>
@@ -139,21 +153,15 @@
         <div>
           <span>Масса №{{ index + 1 }}</span>
           <q-input
-            v-model.trim="sub_weighting.weight"
+            :model-value="sub_weighting.weight"
+            type="number"
+            :tabindex="0"
             :readonly="!worksheetStore.worksheetIsLocked || !!rowProps.row['result'] || isPortOpen"
+            :disable="!rowProps.row.lab_id || !rowProps.row.crucible_id"
             input-class="text-h4 text-left"
-            mask="#.####"
-            fill-mask="0"
-            reverse-fill-mask
             borderless
-            @blur="
-              (event) =>
-                worksheetStore.worksheetIsLocked &&
-                rowProps.row.sub_weightings.length - 1 === index &&
-                !!(event.target as HTMLInputElement)?.value &&
-                Number((event.target as HTMLInputElement).value) !== 0 &&
-                checkConstantWeightMass()
-            "
+            @blur="onBlurSubWeight(index)"
+            @update:model-value="(value) => onChangeSubWeight(index, value)"
           />
         </div>
       </q-td>
@@ -165,8 +173,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch, inject } from 'vue'
-import type { QTableSlots } from 'quasar'
+import { computed, onMounted, ref, watch, inject, type Ref, nextTick } from 'vue'
+import { Notify, type QTableSlots } from 'quasar'
 import { useSettingsStore } from '@/stores/settings'
 import { useWorksheetStore } from '@/stores/worksheet'
 
@@ -174,7 +182,7 @@ const rowProps = defineModel<Parameters<QTableSlots['body']>[0]>('row-props', { 
 
 const props = defineProps<{ uuid: string }>()
 
-const isPortOpen = inject<boolean>('is-port-open')
+const isPortOpen = inject<Ref<boolean>>('is-port-open')
 const isExporting = ref(false)
 
 const settingsStore = useSettingsStore()
@@ -184,43 +192,71 @@ const noRequiredVisibleColumns = computed(() =>
   settingsStore.settings.worksheet_columns.filter((col) => !col.required && col.visible),
 )
 
-const calcResult = () => {
-  rowProps.value.row.calcResult()
+const onChangeValue = (field: string, value: string | number | null) => {
+  rowProps.value.row[field] = value
+  worksheetStore.saveWorksheet()
 }
 
-const checkConstantWeightMass = () => {
+const onChangeFinalWeight = (value: string | number | null) => {
+  rowProps.value.row['final_weight'] = value
+  if (Number(value) === 0) return
+  if (value && !rowProps.value.row.result) {
+    rowProps.value.row.calcResult()
+    exportParallel()
+    worksheetStore.saveWorksheet()
+  }
+}
+
+const onChangeSubWeight = (index: number, value: string | number | null) => {
+  rowProps.value.row.sub_weightings[index].weight = value
+  if (isPortOpen?.value) {
+    rowProps.value.row.sub_weightings[index].weighted_at = new Date()
+    if (
+      worksheetStore.worksheetIsLocked &&
+      rowProps.value?.row.sub_weightings.length - 1 === index &&
+      !!value &&
+      Number(value) !== 0
+    )
+      checkConstantWeightMass()
+  }
+}
+
+const onBlurSubWeight = (index: number) => {
+  if (worksheetStore.worksheetIsLocked && rowProps.value?.row.sub_weightings.length - 1 === index)
+    checkConstantWeightMass()
+}
+
+const checkConstantWeightMass = async () => {
   const finalWeight = rowProps.value.row.determineFinalWeightByConstWeightRule()
   if (isFinite(finalWeight)) {
-    calcResult()
+    rowProps.value.row.calcResult()
+    exportParallel()
   } else {
     rowProps.value.row.addSubWeighting()
+    await nextTick()
   }
   worksheetStore.saveWorksheet()
 }
 
-const exportByFile = async () => {
+const exportParallel = async () => {
+  if (!settingsStore.settings.export.url && !settingsStore.settings.export.folder_path) {
+    Notify.create({
+      message: 'Для экспорта необходимо в настройках указать путь или URL',
+      position: 'top-right',
+    })
+    return
+  }
   isExporting.value = true
   try {
-    await worksheetStore.exportByURL(rowProps.value.row)
+    if (!!settingsStore.settings.export.url) await worksheetStore.exportByURL(rowProps.value.row)
+    if (!!settingsStore.settings.export.folder_path)
+      await worksheetStore.exportByFile(rowProps.value.row)
     rowProps.value.row.exported_at = new Date()
   } catch (e) {
     console.error(e)
   }
   isExporting.value = false
 }
-
-const unwatchFinalWeight = watch(
-  () => rowProps.value.row.final_weight,
-  (val) => {
-    if (Number(val) === 0) return
-    if (val && !rowProps.value.row.result) {
-      calcResult()
-      exportByFile()
-      worksheetStore.saveWorksheet()
-      unwatchFinalWeight()
-    }
-  },
-)
 
 const unwatchResult = watch(
   () => rowProps.value.row.result,
@@ -231,6 +267,14 @@ const unwatchResult = watch(
     }
   },
 )
+
+const padDecimals = (number: string, precision: number) => {
+  const str = String(number)
+  // eslint-disable-next-line prefer-const
+  let [int, dec = ''] = str.split('.')
+  dec = dec.padEnd(precision, '0')
+  return int + '.' + dec
+}
 
 onMounted(() => {
   rowProps.value.row.expand = true

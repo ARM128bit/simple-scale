@@ -61,6 +61,7 @@ declare global {
     repeatability_rules: IRepeatabilityRuleForm[]
     enabled: boolean
     const_weight_rule: string
+    significant_digit: number
     created_at?: string
   }
 
@@ -71,6 +72,7 @@ declare global {
     repeatability_rules: IRepeatabilityRule[]
     enabled: boolean
     const_weight_rule: string
+    significant_digit: number
     created_at?: string
   }
 

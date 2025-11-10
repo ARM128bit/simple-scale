@@ -39,10 +39,7 @@
       keep-alive
     >
       <suspense>
-        <WorksheetItem
-          v-model:tab="tab as IWorksheetTab"
-          :is-port-open="isPortOpen"
-        />
+        <WorksheetItem v-model:tab="tab as IWorksheetTab" />
         <template #fallback>
           <q-inner-loading :showing="true" />
         </template>
@@ -161,28 +158,30 @@ onMounted(async () => {
     if (input && value) {
       input.value = value
       input.dispatchEvent(new Event('input', { bubbles: true }))
-      const tabElements = Array.from(
-        document
-          // Get all elements that can be focusable
-          .querySelectorAll<HTMLElement>(
-            'a, button, input, textarea, select, details, [tabindex]:not([tabindex="-1"])',
-          ),
-      )
+      setTimeout(() => {
+        const tabElements = Array.from(
+          document
+            // Get all elements that can be focusable
+            .querySelectorAll<HTMLElement>(
+              'a, button, input, textarea, select, details, [tabindex]:not([tabindex="-1"])',
+            ),
+        )
 
-        // reverse, then sort by tabIndex descending to put 0s last but maintain original order
-        // .reverse()
-        .sort((a: HTMLElement, b: HTMLElement) => (a.tabIndex > b.tabIndex ? -1 : 1))
-      if (input.tabIndex === -1) {
-        tabElements[0].focus()
-        return
-      }
+          // reverse, then sort by tabIndex descending to put 0s last but maintain original order
+          // .reverse()
+          .sort((a: HTMLElement, b: HTMLElement) => (a.tabIndex > b.tabIndex ? -1 : 1))
+        if (input.tabIndex === -1) {
+          tabElements[0].focus()
+          return
+        }
 
-      // find the current index in the tab list of the currently focused element
-      const currentIndex = tabElements.findIndex((e) => e === input)
+        // find the current index in the tab list of the currently focused element
+        const currentIndex = tabElements.findIndex((e) => e === input)
 
-      // get the next element in the list ("%" will loop the index around to 0)
-      const nextIndex = (currentIndex + 1) % tabElements.length
-      tabElements[nextIndex].focus()
+        // get the next element in the list ("%" will loop the index around to 0)
+        const nextIndex = (currentIndex + 1) % tabElements.length
+        tabElements[nextIndex].focus()
+      }, 100)
     }
   })
   await window.serialPort.successfulOpenSerialPort((data: boolean) => {
