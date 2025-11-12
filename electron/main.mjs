@@ -16,6 +16,8 @@ import { exportToFile, exportToURL } from './export.mjs'
 import { openWorksheet, saveWorksheet } from './worksheet.mjs'
 import serialSingleton, { handleCloseSerialPort, handleInitSerialPort } from './serialport.mjs'
 
+const isDev = process.env.NODE_ENV === 'development'
+
 function createWindow() {
   const win = new BrowserWindow({
     width: 1024,
@@ -23,12 +25,14 @@ function createWindow() {
     webPreferences: {
       preload: path.join(import.meta.dirname, 'preload.mjs'),
       nodeIntegration: true,
+      devTools: isDev,
     },
   })
-  win.webContents.openDevTools({ mode: 'detach' })
+  if (isDev) win.webContents.openDevTools({ mode: 'detach' })
 
-  // win.loadFile('dist/prod.html')
-  win.loadURL('http://localhost:5173')
+  if (!isDev) win.loadFile('dist/prod.html')
+  if (isDev) win.loadURL('http://localhost:5173')
+
   return win
 }
 
