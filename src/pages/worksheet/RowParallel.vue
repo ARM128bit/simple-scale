@@ -222,6 +222,13 @@ const onChangeSubWeight = (index: number, value: string | number | null) => {
 }
 
 const onBlurSubWeight = (index: number) => {
+  if (
+    !rowProps.value.row.sub_weightings[index].weighted_at &&
+    !!rowProps.value.row.sub_weightings[index].weight &&
+    rowProps.value.row.sub_weightings[index].weight > 0
+  ) {
+    rowProps.value.row.sub_weightings[index].weighted_at = new Date()
+  }
   if (worksheetStore.worksheetIsLocked && rowProps.value?.row.sub_weightings.length - 1 === index)
     checkConstantWeightMass()
 }
@@ -255,6 +262,7 @@ const exportParallel = async () => {
   } catch (e) {
     console.error(e)
   }
+  worksheetStore.saveWorksheet()
   isExporting.value = false
 }
 

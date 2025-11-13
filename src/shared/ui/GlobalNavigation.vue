@@ -9,13 +9,10 @@
         :to="{ name: 'worksheet-desk' }"
         label="Worksheet"
       />
-
-      <!-- :disable="worksheetStore.worksheetIsLocked" -->
       <q-route-tab
         :to="{ name: 'settings' }"
         label="Settings"
       >
-        <!-- v-if="worksheetStore.worksheetIsLocked" -->
         <q-tooltip
           anchor="bottom middle"
           self="top middle"

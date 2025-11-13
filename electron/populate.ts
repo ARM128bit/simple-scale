@@ -85,7 +85,7 @@ db.exec(scalesSQL)
 db.exec(methodsSQL)
 db.exec(methodsRepeatabilityRulesSQL)
 
-const methods = [
+const methods: IMethod<Omit<IRepeatabilityRule, 'id' | 'code'>>[] = [
   {
     code: 'COA__GO111',
     name: 'Зольность',
@@ -106,7 +106,7 @@ const methods = [
         value: 0.02,
       },
     ],
-    enabled: 1,
+    enabled: true,
   },
   {
     code: 'COVM__GO111',
@@ -115,11 +115,11 @@ const methods = [
     const_weight_rule: null,
     significant_digit: 2,
     repeatability_rules: [],
-    enabled: 1,
+    enabled: true,
   },
 ]
 
-const users = [
+const users: Omit<IUser, 'fullName'>[] = [
   {
     first_name: 'Yuri',
     last_name: 'Antonevich',
@@ -127,7 +127,7 @@ const users = [
   },
 ]
 
-const scales = [
+const scales: IScale[] = [
   {
     code: 'usb',
     name: 'usb',
@@ -169,9 +169,9 @@ export function defaultSettings() {
   })
 }
 
-handleSetUsers(null, users)
-handleSetScales(null, scales)
-handleSetMethods(null, methods)
-handleSetSettings(null, defaultSettings())
+handleSetUsers(undefined, users)
+handleSetScales(undefined, scales)
+handleSetMethods(undefined, methods)
+handleSetSettings(undefined, defaultSettings())
 
 db.close()

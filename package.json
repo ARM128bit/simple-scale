@@ -1,11 +1,12 @@
 {
-  "name": "progresscale",
-  "version": "0.0.0",
+  "name": "simple-scale",
+  "version": "0.9.0",
   "private": true,
   "type": "module",
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
   },
+  "main": "dist-electron/electron/main.js",
   "scripts": {
     "dev": "vite",
     "build": "run-p type-check \"build-only {@}\" --",
@@ -18,11 +19,15 @@
     "type-check": "vue-tsc --build",
     "lint": "eslint . --fix",
     "format": "prettier --write src/",
-    "electron:start": "electron ./electron/main.mjs",
-    "electron:build": "tsc -p tsconfig.electron.json"
+    "electron:build": "tsc -p tsconfig.electron.json",
+    "electron:dev": "NODE_ENV=development electron-forge start",
+    "electron:prev": "electron-forge start",
+    "electron:package": "electron-forge package",
+    "electron:make": "electron-forge make"
   },
   "dependencies": {
     "@quasar/extras": "^1.17.0",
+    "electron-squirrel-startup": "^1.0.1",
     "pinia": "^3.0.3",
     "quasar": "^2.18.5",
     "serialport": "^13.0.0",
@@ -30,6 +35,14 @@
     "vue-router": "^4.5.1"
   },
   "devDependencies": {
+    "@electron-forge/cli": "^7.10.2",
+    "@electron-forge/maker-deb": "^7.10.2",
+    "@electron-forge/maker-rpm": "^7.10.2",
+    "@electron-forge/maker-squirrel": "^7.10.2",
+    "@electron-forge/maker-zip": "^7.10.2",
+    "@electron-forge/plugin-auto-unpack-natives": "^7.10.2",
+    "@electron-forge/plugin-fuses": "^7.10.2",
+    "@electron/fuses": "^1.8.0",
     "@quasar/vite-plugin": "^1.10.0",
     "@tsconfig/node22": "^22.0.2",
     "@types/electron": "^1.4.38",

@@ -1,15 +1,17 @@
 <script setup lang="ts">
+import { onMounted } from 'vue'
 import DefaultLayout from './layouts/DefaultLayout.vue'
 import { useUsersStore } from '@/stores/users'
 import { useScalesStore } from '@/stores/scales'
 import { useMethodsStore } from '@/stores/methods'
-import { onMounted } from 'vue'
 import { useSettingsStore } from './stores/settings'
+import { useRoute } from 'vue-router'
 
 const usersStore = useUsersStore()
 const scalesStore = useScalesStore()
 const methodsStore = useMethodsStore()
 const settingsStore = useSettingsStore()
+const route = useRoute()
 
 onMounted(() => {
   usersStore.loadUsers()
@@ -25,7 +27,7 @@ onMounted(() => {
       <keep-alive>
         <component
           :is="Component"
-          :key="$route.fullPath"
+          :key="route.fullPath"
         />
       </keep-alive>
     </router-view>

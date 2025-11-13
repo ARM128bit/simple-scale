@@ -18,6 +18,8 @@ import serialSingleton, { handleCloseSerialPort, handleInitSerialPort } from './
 
 const isDev = process.env.NODE_ENV === 'development'
 
+console.log(isDev)
+
 function createWindow() {
   const win = new BrowserWindow({
     width: 1024,
@@ -36,14 +38,14 @@ function createWindow() {
   return win
 }
 
-const sendSerialDataToRenderer = (window) => {
-  return (data) => {
+const sendSerialDataToRenderer = (window: BrowserWindow) => {
+  return (data: string) => {
     window.webContents.send('serial-port:listen', data)
   }
 }
 
-const sendSuccessOpenPortToRenderer = (window) => {
-  return (data) => {
+const sendSuccessOpenPortToRenderer = (window: BrowserWindow) => {
+  return (data: boolean) => {
     window.webContents.send('serial-port:successfully-opened', data)
   }
 }
@@ -59,11 +61,10 @@ app.whenReady().then(() => {
   ipcMain.handle('settings:save', handleSetSettings)
   ipcMain.handle('settings:load', handleGetSettings)
 
-  ipcMain.on('serial-port:init', (event, payload) =>
+  ipcMain.on('serial-port:init', () =>
     handleInitSerialPort(
       sendSuccessOpenPortToRenderer(mainWindow),
       sendSerialDataToRenderer(mainWindow),
-      payload,
     ),
   )
   ipcMain.handle('serial-port:close', handleCloseSerialPort)

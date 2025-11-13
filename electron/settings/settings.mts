@@ -47,6 +47,7 @@ export function getAppConfigFolder() {
 export function createWorksheetFolder() {
   try {
     const strSettings = handleGetSettings()
+    if (!strSettings) return
     const settings = JSON.parse(strSettings)
     if (!fs.existsSync(settings.export.worksheet_folder_path)) {
       fs.mkdirSync(settings.export.worksheet_folder_path, { recursive: true })
@@ -59,7 +60,7 @@ export function createWorksheetFolder() {
   }
 }
 
-export function handleSetSettings(event, payload) {
+export function handleSetSettings(event: Electron.IpcMainInvokeEvent | undefined, payload: string) {
   try {
     const appConfigFolder = getAppConfigFolder()
     fs.writeFileSync(path.join(appConfigFolder, 'config.json'), payload, 'utf8')
@@ -70,7 +71,7 @@ export function handleSetSettings(event, payload) {
   }
 }
 
-export function handleGetSettings() {
+export function handleGetSettings(): string | undefined {
   try {
     const appConfigFolder = getAppConfigFolder()
     const configStr = fs.readFileSync(path.join(appConfigFolder, 'config.json'), 'utf8')

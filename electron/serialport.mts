@@ -2,6 +2,9 @@ import { ReadlineParser, SerialPort } from 'serialport'
 import { handleGetSettings } from './settings/settings.mjs'
 
 class SerialSingleton {
+  static instance: SerialSingleton | null = null
+  private port: SerialPort | null = null
+  private parser: ReadlineParser | null = null
   constructor() {
     if (SerialSingleton.instance) {
       return SerialSingleton.instance
@@ -14,7 +17,11 @@ class SerialSingleton {
     return this
   }
 
-  init(config, openPortCallback, callback, scale) {
+  init(
+    config: ISetting['serial_port'],
+    openPortCallback: (data: boolean) => void,
+    callback: (data: string) => void,
+  ) {
     if (this.port) {
       this.port.close(() => {
         console.log('Порт закрыт')
@@ -53,11 +60,15 @@ class SerialSingleton {
 
 const serialSingleton = new SerialSingleton()
 
-export async function handleInitSerialPort(openPortCallback, dataCallback, scale) {
+export async function handleInitSerialPort(
+  openPortCallback: (value: boolean) => void,
+  dataCallback: (data: string) => void,
+) {
   try {
     const strSetting = handleGetSettings()
+    if (!strSetting) return
     const setting = JSON.parse(strSetting)
-    serialSingleton.init(setting.serial_port, openPortCallback, dataCallback, scale)
+    serialSingleton.init(setting.serial_port, openPortCallback, dataCallback)
   } catch (e) {
     console.log(e)
   }

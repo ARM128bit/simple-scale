@@ -1,13 +1,13 @@
 import db from '../database.mjs'
 
-export function handleSetMethods(event, payload) {
+export function handleSetMethods(
+  event: Electron.IpcMainInvokeEvent | undefined,
+  payload: IMethod<Omit<IRepeatabilityRule, 'id' | 'code'>>[],
+) {
   try {
     db.exec('DELETE FROM methods;')
     const insertStatement = db.prepare(
       'INSERT INTO methods (code, name, significant_digit, calc_type, const_weight_rule, enabled, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
-    )
-    const insertRuleStatement = db.prepare(
-      'INSERT INTO methods_repeatability_rules (code, start, end, type, value) VALUES (?, ?, ?, ?, ?)',
     )
     for (const method of payload) {
       insertStatement.run(
@@ -25,6 +25,9 @@ export function handleSetMethods(event, payload) {
       )
       deleteRulesStatement.run(method.code)
       for (const rule of method.repeatability_rules ?? []) {
+        const insertRuleStatement = db.prepare(
+          'INSERT INTO methods_repeatability_rules (code, start, end, type, value) VALUES (?, ?, ?, ?, ?)',
+        )
         insertRuleStatement.run(method.code, rule.start, rule.end, rule.type, rule.value)
       }
     }
@@ -47,5 +50,5 @@ export function handleGetMethods() {
   FROM methods as method LEFT OUTER JOIN methods_repeatability_rules as rule
   ON method.code = rule.code
   GROUP BY method.code`)
-  return methodsStatement.all().map((item) => JSON.parse(item.result))
+  return methodsStatement.all().map((item) => JSON.parse(item.result as string))
 }

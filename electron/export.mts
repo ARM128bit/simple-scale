@@ -1,12 +1,16 @@
 import fs from 'fs'
 import path from 'path'
-import { dialog } from 'electron'
 import { handleGetSettings } from './settings/settings.mjs'
 
-export async function exportToFile(event, { username, method, data }) {
+export async function exportToFile(
+  event: Electron.IpcMainInvokeEvent,
+  { username, method, data }: { username: string; method: string; data: string },
+) {
   try {
     const strSetting = handleGetSettings()
-    const settings = JSON.parse(strSetting)
+    if (!strSetting) return
+    const settings = JSON.parse(strSetting) as IConfigSetting
+    if (!settings.export.folder_path) return
     const now = new Date().toISOString()
     const _path = path.join(
       settings.export.folder_path,
@@ -21,9 +25,8 @@ export async function exportToFile(event, { username, method, data }) {
   }
 }
 
-export async function exportToURL(event, url) {
+export async function exportToURL(event: Electron.IpcMainInvokeEvent, url: string) {
   try {
-    console.log(url)
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },

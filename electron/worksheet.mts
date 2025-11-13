@@ -3,14 +3,15 @@ import path from 'path'
 import { dialog } from 'electron'
 import { handleGetSettings } from './settings/settings.mjs'
 
-export async function openWorksheet(event) {
+export async function openWorksheet() {
   try {
     const strSetting = handleGetSettings()
+    if (!strSetting) return
     const settings = JSON.parse(strSetting)
-    const file = await dialog.showOpenDialog({
+    const file = (await dialog.showOpenDialog({
       defaultPath: settings.export.worksheet_folder_path,
       properties: ['openFile'],
-    })
+    })) as unknown as { canceled: boolean; filePaths: string[] }
     if (!file.canceled) {
       const data = fs.readFileSync(file.filePaths[0], 'utf8')
       return { data, path: file.filePaths[0] }
@@ -20,9 +21,18 @@ export async function openWorksheet(event) {
   }
 }
 
-export async function saveWorksheet(event, { username, method, data, path: worksheet_path }) {
+export async function saveWorksheet(
+  event: Electron.IpcMainInvokeEvent,
+  {
+    username,
+    method,
+    data,
+    path: worksheet_path,
+  }: { username: string; method: string; path: string; data: string },
+) {
   try {
     const strSetting = handleGetSettings()
+    if (!strSetting) return
     const settings = JSON.parse(strSetting)
     const now = new Date()
     const nowPath =

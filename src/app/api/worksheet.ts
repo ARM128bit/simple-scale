@@ -1,5 +1,15 @@
 export const worksheetAPI = {
-  async save(username: string, method: string, data: string, path?: string) {
+  async save({
+    username,
+    method,
+    data,
+    path,
+  }: {
+    username: string
+    method: string
+    data: string
+    path?: string
+  }) {
     return await window.worksheet.saveWorksheet({
       username,
       method,

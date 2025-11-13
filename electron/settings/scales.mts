@@ -1,6 +1,6 @@
 import db from '../database.mjs'
 
-export function handleSetScales(event, payload) {
+export function handleSetScales(event: Electron.IpcMainInvokeEvent | undefined, payload: IScale[]) {
   try {
     db.exec('DELETE FROM scales;')
     const insertStatement = db.prepare(

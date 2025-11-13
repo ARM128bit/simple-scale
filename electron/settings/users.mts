@@ -1,6 +1,9 @@
 import db from '../database.mjs'
 
-export function handleSetUsers(event, payload) {
+export function handleSetUsers(
+  event: Electron.IpcMainInvokeEvent | undefined,
+  payload: Omit<IUser, 'fullName'>[],
+) {
   try {
     db.exec('DELETE FROM users;')
     const insertStatement = db.prepare(
@@ -12,8 +15,8 @@ export function handleSetUsers(event, payload) {
     return true
   } catch (e) {
     console.log(e)
-    return false
   }
+  return false
 }
 
 export function handleGetUsers() {

@@ -91,7 +91,11 @@ export const useWorksheetStore = cache((name: string) =>
           },
         )
         if (data) {
-          await exportAPI.exportByFile(selectedUser.value.fullName, selectedMethod.value.code, data)
+          await exportAPI.exportByFile({
+            username: selectedUser.value.fullName,
+            method: selectedMethod.value.code,
+            data,
+          })
           parallel.exported_at = new Date()
         }
       } catch (e: unknown) {
@@ -176,12 +180,12 @@ export const useWorksheetStore = cache((name: string) =>
             '\n'
         }
 
-        const filePath = await worksheetAPI.save(
-          selectedUser.value.fullName.replace(' ', '_'),
-          selectedMethod.value.code,
-          csv,
-          worksheetFilePath.value,
-        )
+        const filePath = await worksheetAPI.save({
+          username: selectedUser.value.fullName.replace(' ', '_'),
+          method: selectedMethod.value.code,
+          data: csv,
+          path: worksheetFilePath.value,
+        })
         worksheetFileName.value = filePath
       }
     }
@@ -235,7 +239,7 @@ export const useWorksheetStore = cache((name: string) =>
           if (keys[idx] === 'method') {
             const method = methodsStore.methods.get(cells[idx])
             if (method) {
-              if (!selectedMethod.value) {
+              if (!selectedMethod.value || selectedMethod.value.code !== method.code) {
                 selectedMethod.value = method
               }
               _parallel[keys[idx]] = method
@@ -254,7 +258,10 @@ export const useWorksheetStore = cache((name: string) =>
             const [weight, weighted_at] = cells[idx].split(SUB_WEIGHT_DELIMITER)
             subWeightings.push({
               weight,
-              weighted_at: weighted_at !== 'null' ? new Date(weighted_at) : null,
+              weighted_at:
+                weighted_at !== 'null' && weighted_at !== 'undefined'
+                  ? new Date(weighted_at)
+                  : null,
             })
             continue
           }

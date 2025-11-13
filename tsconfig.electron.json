@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "composite": true,
     "target": "esnext",
     "module": "esnext",
     "moduleResolution": "node",
@@ -16,9 +17,11 @@
     "removeComments": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "types": ["node"],
-    "outDir": "electron-app"
+    "types": ["node", "electron"],
+    "outDir": "dist-electron",
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.electron.tsbuildinfo",
+    "skipLibCheck": true
   },
-  "include": ["electron/**/*"],
-  "exclude": ["src", "electron/populate.mjs"]
+  "include": ["env.d.ts", "electron/**/*"],
+  "exclude": ["src"]
 }

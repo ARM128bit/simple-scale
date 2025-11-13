@@ -25,7 +25,7 @@ export default defineConfig({
   base: '',
   build: {
     emptyOutDir: true,
-    outDir: 'electron/dist',
+    outDir: 'dist',
     target: 'es2022',
     rollupOptions: {
       input: {

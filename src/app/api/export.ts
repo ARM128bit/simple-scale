@@ -1,5 +1,13 @@
 export const exportAPI = {
-  async exportByFile(username: string, method: string, data: string) {
+  async exportByFile({
+    username,
+    method,
+    data,
+  }: {
+    username: string
+    method: string
+    data: string
+  }) {
     return await window.export.exportToFile({
       username,
       method,

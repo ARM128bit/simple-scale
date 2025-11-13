@@ -14,8 +14,21 @@ export const useSettingsStore = defineStore('settings', () => {
       data_template: '{lab_id}={result}',
     },
     worksheet_columns: [
-      { label: 'Actions', field: 'expand', name: 'expand', required: true, visible: true },
-      { label: 'Lab No', field: 'lab_id', name: 'lab_id', required: true, visible: true },
+      {
+        label: 'Actions',
+        field: 'expand',
+        name: 'expand',
+        required: true,
+        visible: true,
+      },
+      {
+        label: 'Lab No',
+        field: 'lab_id',
+        name: 'lab_id',
+        required: true,
+        visible: true,
+        style: 'min-width: 200px',
+      },
       {
         label: 'Идентификатор тигля',
         field: 'crucible_id',
