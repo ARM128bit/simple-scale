@@ -1,5 +1,6 @@
 {
   "name": "simple-scale",
+  "description": "Program for obtaining data from scales",
   "version": "0.9.0",
   "private": true,
   "type": "module",

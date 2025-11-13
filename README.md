@@ -20,13 +20,13 @@ See [Vite Configuration Reference](https://vite.dev/config/).
 npm install
 ```
 
-### Compile and Hot-Reload for Development
+### Compile and Hot-Reload for Development the renderer side
 
 ```sh
 npm run dev
 ```
 
-### Type-Check, Compile and Minify for Production
+### Type-Check, Compile and Minify for Production the renderer side
 
 ```sh
 npm run build
@@ -44,20 +44,44 @@ npm run test:unit
 npm run test:e2e:dev
 ```
 
-This runs the end-to-end tests against the Vite development server.
-It is much faster than the production build.
-
-But it's still recommended to test the production build with `test:e2e` before deploying (e.g. in CI environments):
-
-```sh
-npm run build
-npm run test:e2e
-```
-
 ### Lint with [ESLint](https://eslint.org/)
 
 ```sh
 npm run lint
+```
+
+### Run as dev the electron app
+
+```sh
+npm run dev
+```
+
+```sh
+npm run electron:dev
+```
+
+### Run as prev the electron app(should be built the renderer side)
+
+```sh
+npm run electron:prev
+```
+
+### Build the electron app
+
+```sh
+npm run electron:build
+```
+
+### Package the electron app
+
+```sh
+npm run electron:package
+```
+
+### Make distributable(see platforms setting forge.config.ts)
+
+```sh
+npm run electron:make
 ```
 
 ### Debugging COM Port using socat
