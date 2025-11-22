@@ -12,6 +12,11 @@ declare global {
       setSettings: (payload: string) => Promise<boolean>
       getScales: () => Promise<IScale[]>
       setScales: (payload: unknown) => Promise<unknown>
+      getTemplates: () => Promise<ITemplates[]>
+      createTemplate: (payload: ITemplate) => Promise<boolean>
+      updateTemplate: (payload: ITemplate) => Promise<void>
+      deleteTemplate: (payload: ITemplate) => Promise<void>
+      openTemplateFile: () => Promise<{ name: string; path: string }>
     }
     serialPort: {
       initSerialPort: (payload: unknown) => Promise<unknown>
@@ -22,11 +27,16 @@ declare global {
     worksheet: {
       openWorksheet: () => Promise<{ data: string; path: string }>
       saveWorksheet: (payload: unknown) => Promise<string>
+      printPdf: (payload: { template: ITemplate; worksheetData: string }) => Promise<void>
     }
     export: {
       exportToURL: (payload: string) => Promise<void>
       exportToFile: (payload: { username: string; method: string; data: string }) => Promise<void>
     }
+  }
+
+  type NonNullableFields<T> = {
+    [P in keyof T]: NonNullable<T[P]>
   }
 
   interface IWorksheetTab {
@@ -148,6 +158,13 @@ declare global {
     passed_repeatability: 'passed' | 'not-passed' | undefined
     exported_at: Date | null
     calcResult: () => void
+  }
+
+  interface ITemplate {
+    id?: number
+    title: string
+    file: { name: string; path: string }
+    methods: IMethod['code'][]
   }
 }
 

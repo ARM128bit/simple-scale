@@ -20,4 +20,10 @@ export const worksheetAPI = {
   async open() {
     return await window.worksheet.openWorksheet()
   },
+  async print(template: ITemplate, worksheetData: string) {
+    return await window.worksheet.printPdf({
+      template,
+      worksheetData,
+    })
+  },
 }

@@ -15,10 +15,18 @@ import {
 import { exportToFile, exportToURL } from './export.mjs'
 import { openWorksheet, saveWorksheet } from './worksheet.mjs'
 import serialSingleton, { handleCloseSerialPort, handleInitSerialPort } from './serialport.mjs'
+import { printPdfFile } from './reports/print-worksheet.mjs'
+import {
+  handleGetTemplates,
+  handleCreateTemplate,
+  handleUpdateTemplate,
+  handleDeleteTemplate,
+  openTemplate,
+} from './settings/templates.mjs'
 
 const isDev = process.env.NODE_ENV === 'development'
 
-console.log(isDev)
+console.log('development', isDev)
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -52,14 +60,20 @@ const sendSuccessOpenPortToRenderer = (window: BrowserWindow) => {
 
 app.whenReady().then(() => {
   const mainWindow = createWindow()
-  ipcMain.handle('setUsers', handleSetUsers)
-  ipcMain.handle('getUsers', handleGetUsers)
-  ipcMain.handle('setScales', handleSetScales)
-  ipcMain.handle('getScales', handleGetScales)
-  ipcMain.handle('setMethods', handleSetMethods)
-  ipcMain.handle('getMethods', handleGetMethods)
+  ipcMain.handle('users:set', handleSetUsers)
+  ipcMain.handle('users:get', handleGetUsers)
+  ipcMain.handle('scales:set', handleSetScales)
+  ipcMain.handle('scales:get', handleGetScales)
+  ipcMain.handle('methods:set', handleSetMethods)
+  ipcMain.handle('methods:get', handleGetMethods)
   ipcMain.handle('settings:save', handleSetSettings)
   ipcMain.handle('settings:load', handleGetSettings)
+
+  ipcMain.handle('templates:get', handleGetTemplates)
+  ipcMain.handle('template:create', handleCreateTemplate)
+  ipcMain.handle('template:update', handleUpdateTemplate)
+  ipcMain.handle('template:delete', handleDeleteTemplate)
+  ipcMain.handle('templates:open-template', openTemplate)
 
   ipcMain.on('serial-port:init', () =>
     handleInitSerialPort(
@@ -74,6 +88,8 @@ app.whenReady().then(() => {
 
   ipcMain.handle('export:file', exportToFile)
   ipcMain.handle('export:url', exportToURL)
+
+  ipcMain.handle('print:pdf', printPdfFile)
 
   createWorksheetFolder()
 

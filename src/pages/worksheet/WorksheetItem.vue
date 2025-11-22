@@ -56,6 +56,24 @@
         {{ 'Для начала работы необходимо выбрать весы, метод и пользователя' }}
       </q-tooltip>
     </q-btn>
+    <q-select
+      v-model="selectedTemplate"
+      :options="templates"
+      :disable="!worksheetStore.worksheetFileName"
+      option-label="title"
+      label="Шаблон"
+      class="text-h6"
+      dense
+      clearable
+      :style="{ width: '250px' }"
+    />
+    <q-btn
+      :disable="!selectedTemplate"
+      icon="print"
+      @click="() => worksheetStore.printWorksheet(selectedTemplate!)"
+    >
+      Печать
+    </q-btn>
   </div>
   <div class="row q-gutter-sm q-ma-sm">
     {{
@@ -91,17 +109,30 @@
 </template>
 
 <script setup lang="ts">
-import { computed, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useUsersStore } from '@/stores/users'
 import { useMethodsStore } from '@/stores/methods'
 import { absoluteComparsion, relativeComparsion, useWorksheetStore } from '@/stores/worksheet'
 import RowParallel from './RowParallel.vue'
+import { useTemplatesStore } from '@/stores/templates'
 
 const tab = defineModel<IWorksheetTab>('tab', { required: true })
 
 const usersStore = useUsersStore()
 const methodsStore = useMethodsStore()
+const templatesStore = useTemplatesStore()
 const worksheetStore = useWorksheetStore(tab.value.uuid)
+
+const selectedTemplate = ref<ITemplate | null>(null)
+
+const templates = computed(() => {
+  if (!worksheetStore.selectedMethod?.code) return []
+  return [...templatesStore.templates.values()].filter(
+    (template) =>
+      template.methods.includes(worksheetStore.selectedMethod!.code) ||
+      template.methods.length === 0,
+  )
+})
 
 const sheetData = computed(() => {
   const data = []

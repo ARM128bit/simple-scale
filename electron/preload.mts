@@ -1,13 +1,18 @@
 import { contextBridge, ipcRenderer } from 'electron'
 contextBridge.exposeInMainWorld('settings', {
-  getUsers: () => ipcRenderer.invoke('getUsers'),
-  setUsers: (payload: Omit<IUser, 'fullName'>[]) => ipcRenderer.invoke('setUsers', payload),
-  getScales: () => ipcRenderer.invoke('getScales'),
-  setScales: (payload: IScale[]) => ipcRenderer.invoke('setScales', payload),
-  getMethods: () => ipcRenderer.invoke('getMethods'),
-  setMethods: (payload: IMethod[]) => ipcRenderer.invoke('setMethods', payload),
+  getUsers: () => ipcRenderer.invoke('users:get'),
+  setUsers: (payload: Omit<IUser, 'fullName'>[]) => ipcRenderer.invoke('users:set', payload),
+  getScales: () => ipcRenderer.invoke('scales:get'),
+  setScales: (payload: IScale[]) => ipcRenderer.invoke('scales:set', payload),
+  getMethods: () => ipcRenderer.invoke('methods:get'),
+  setMethods: (payload: IMethod[]) => ipcRenderer.invoke('methods:set', payload),
   getSettings: () => ipcRenderer.invoke('settings:load'),
   setSettings: (payload: IConfigSetting) => ipcRenderer.invoke('settings:save', payload),
+  getTemplates: () => ipcRenderer.invoke('templates:get'),
+  createTemplate: (payload: ITemplate) => ipcRenderer.invoke('template:create', payload),
+  updateTemplate: (payload: ITemplate) => ipcRenderer.invoke('template:update', payload),
+  deleteTemplate: (payload: ITemplate) => ipcRenderer.invoke('template:delete', payload),
+  openTemplateFile: () => ipcRenderer.invoke('templates:open-template'),
 })
 
 contextBridge.exposeInMainWorld('serialPort', {
@@ -23,6 +28,8 @@ contextBridge.exposeInMainWorld('worksheet', {
   openWorksheet: () => ipcRenderer.invoke('worksheet:open'),
   saveWorksheet: (payload: { username: string; method: string; data: string; path?: string }) =>
     ipcRenderer.invoke('worksheet:save', payload),
+  printPdf: (payload: { template: ITemplate; worksheetData: string }) =>
+    ipcRenderer.invoke('print:pdf', payload),
 })
 
 contextBridge.exposeInMainWorld('export', {

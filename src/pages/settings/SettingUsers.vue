@@ -121,8 +121,8 @@ const defaultUser = (): IUser => {
 const showAddUserForm = ref(false)
 const addUserForm = reactive(defaultUser())
 
-const addUser = () => {
-  usersStore.addUser(addUserForm)
+const addUser = async () => {
+  await usersStore.addUser(addUserForm)
   toggleAddUserForm()
 }
 

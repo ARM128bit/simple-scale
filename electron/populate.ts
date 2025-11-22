@@ -27,7 +27,7 @@ function getDocumentsPath() {
 
     try {
       const content = fs.readFileSync(userDirsFile, 'utf8')
-      const match = content.match(/^XDG_DOCUMENTS_DIR="?(.+)"?$/m)
+      const match = content.match(/^XDG_DOCUMENTS_DIR="?(.+[^"])"?$/m)
       if (match) {
         let dir = match[1].replace('$HOME', home)
         return dir
@@ -71,18 +71,39 @@ const methodsSQL = `CREATE TABLE IF NOT EXISTS methods (
 
 const methodsRepeatabilityRulesSQL = `CREATE TABLE IF NOT EXISTS methods_repeatability_rules (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  code TEXT NOT NULL,
+  code CHAR(255) NOT NULL,
   start INTEGER NOT NULL,
   end INTEGER NOT NULL,
   type TEXT NOT NULL,
   value INTEGER NOT NULL DEFAULT 0,
-  CONSTRAINT device_fk_code FOREIGN KEY (code)
+  CONSTRAINT method_fk_code FOREIGN KEY (code)
         REFERENCES methods (code) ON UPDATE CASCADE ON DELETE CASCADE
+);`
+
+const templatesSQL = `CREATE TABLE IF NOT EXISTS templates (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  title TEXT NOT NULL,
+  file_name TEXT NOT NULL,
+  blob BLOB NOT NULL
+);`
+
+const templatesMethodsSQL = `CREATE TABLE IF NOT EXISTS templates_methods (
+  method_code CHAR(255) NOT NULL,
+  template_id INTEGER NOT NULL,
+
+  -- Composite primary key:
+  PRIMARY KEY (method_code, template_id),
+
+  -- Foreign keys:
+  FOREIGN KEY (method_code) REFERENCES methods(code) ON DELETE CASCADE,
+  FOREIGN KEY (template_id) REFERENCES templates(id) ON DELETE CASCADE
 );`
 
 db.exec(usersSQL)
 db.exec(scalesSQL)
 db.exec(methodsSQL)
+db.exec(templatesSQL)
+db.exec(templatesMethodsSQL)
 db.exec(methodsRepeatabilityRulesSQL)
 
 const methods: IMethod<Omit<IRepeatabilityRule, 'id' | 'code'>>[] = [

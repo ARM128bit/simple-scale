@@ -35,6 +35,11 @@
           label="Users"
         />
         <q-route-tab
+          :to="{ name: 'setting-templates' }"
+          icon="upload_file"
+          label="Templates"
+        />
+        <q-route-tab
           :to="{ name: 'setting-export' }"
           icon="upload_file"
           label="Export"

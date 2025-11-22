@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "@quasar/extras": "^1.17.0",
+    "easy-template-x": "^7.0.2",
     "electron-squirrel-startup": "^1.0.1",
     "pinia": "^3.0.3",
     "quasar": "^2.18.5",

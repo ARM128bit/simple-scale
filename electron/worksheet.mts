@@ -9,6 +9,10 @@ export async function openWorksheet() {
     if (!strSetting) return
     const settings = JSON.parse(strSetting)
     const file = (await dialog.showOpenDialog({
+      filters: [
+        { name: 'All Files', extensions: ['*'] },
+        { name: 'csv', extensions: ['csv'] },
+      ],
       defaultPath: settings.export.worksheet_folder_path,
       properties: ['openFile'],
     })) as unknown as { canceled: boolean; filePaths: string[] }

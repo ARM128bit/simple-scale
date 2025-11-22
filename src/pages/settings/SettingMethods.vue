@@ -357,8 +357,8 @@ const defaultMethod = (): IMethodForm => {
 const showAddMethodForm = ref(false)
 const addMethodForm = reactive(defaultMethod())
 
-const addMethod = () => {
-  methodsStore.addMethod(addMethodForm)
+const addMethod = async () => {
+  await methodsStore.addMethod(addMethodForm)
   toggleAddMethodForm()
 }
 

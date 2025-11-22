@@ -139,8 +139,8 @@ const defaultScale = (): IScale => {
 const showAddScaleForm = ref(false)
 const addScaleForm = reactive(defaultScale())
 
-const addScale = () => {
-  scalesStore.addScale(addScaleForm)
+const addScale = async () => {
+  await scalesStore.addScale(addScaleForm)
   toggleAddScaleForm()
 }
 

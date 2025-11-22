@@ -1,10 +1,11 @@
 import SettingMain from '@/pages/settings/SettingMain.vue'
-import MethodsList from '@/pages/settings/SettingMethods.vue'
-import UsersList from '@/pages/settings/SettingUsers.vue'
+import SettingMethods from '@/pages/settings/SettingMethods.vue'
+import SettingUsers from '@/pages/settings/SettingUsers.vue'
 import { createRouter, createWebHashHistory } from 'vue-router'
 import SettingExport from '@/pages/settings/SettingExport.vue'
 import SettingWorksheet from '@/pages/settings/SettingWorksheet.vue'
 import SettingScales from '@/pages/settings/SettingScales.vue'
+import SettingTemplates from '@/pages/settings/SettingTemplates.vue'
 import SettingSerialPort from '@/pages/settings/SettingSerialPort.vue'
 import WorksheetDesk from '@/pages/worksheet/WorksheetDesk.vue'
 
@@ -30,7 +31,7 @@ const router = createRouter({
         {
           path: 'methods',
           name: 'setting-methods',
-          component: MethodsList,
+          component: SettingMethods,
         },
         {
           path: 'serial-port',
@@ -45,7 +46,12 @@ const router = createRouter({
         {
           path: 'users',
           name: 'setting-users',
-          component: UsersList,
+          component: SettingUsers,
+        },
+        {
+          path: 'templates',
+          name: 'setting-templates',
+          component: SettingTemplates,
         },
         {
           path: 'export',

@@ -291,6 +291,10 @@ export const useWorksheetStore = cache((name: string) =>
       }
     }
 
+    const printWorksheet = async (template: ITemplate) => {
+      await worksheetAPI.print(toRaw(template), JSON.stringify(rawSheetData.value))
+    }
+
     return {
       worksheetIsLocked: computed(() => worksheetIsLocked.value),
       sheetColumns,
@@ -303,6 +307,7 @@ export const useWorksheetStore = cache((name: string) =>
       toggleWorksheetLocking,
       openWorksheet,
       saveWorksheet,
+      printWorksheet,
       exportByFile,
       exportByURL,
     }
