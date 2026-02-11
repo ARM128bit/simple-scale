@@ -1,6 +1,6 @@
 # SimpleScale
 
-This template should help get you started developing with Vue 3 in Vite.
+This software are designed for connection to analytical scales and subsequent automation of data transfer to laboratory data systems
 
 ## Recommended IDE Setup
 
